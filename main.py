@@ -48,7 +48,6 @@ display = tk.Label(text = "?")
 
 for col in range(2):
     for row in range(3):
-        print(col * 3 + row + 1)
         brailleButtons[col * 3 + row].button.grid(column = col, row = row)
 display.grid(column = 0, row = 3, columnspan = 2)
 myWindow.mainloop()

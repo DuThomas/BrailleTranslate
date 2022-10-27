@@ -1,6 +1,6 @@
 # BrailleTranslate 2022
 
-Traducteur de braille - Projet de la mineur ***Métiers de la création 1***
+Traducteur de braille français - Projet de la mineur ***Métiers de la création 1***
 
 ## Application
 

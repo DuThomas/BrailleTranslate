@@ -2,7 +2,8 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 
-img = cv2.imread('./allChar.png')
+imagePath = './allChar.png'
+img = cv2.imread(imagePath)
 
 scale_percent = 300 # percent of original size
 width = int(img.shape[1] * scale_percent / 100)
@@ -16,12 +17,10 @@ xmin = w - 1
 ymin = h - 1
 xmax = 0
 ymax = 0
-pasx = 5
-pasy = 7
 
 for lig in range(h):
     for col in range(w):
-        if(img[lig,col,0] == 0):
+        if(img[lig,col,0] < 125):
             if(lig > ymax):                
                 ymax = lig
             if(lig < ymin):               
@@ -31,7 +30,7 @@ for lig in range(h):
             if(col < xmin):              
                 xmin = col
 
-mythreshold = 189
+mythreshold = 100
 erode = 0
 dilate = 0
 while True:
@@ -41,7 +40,7 @@ while True:
     yTuples = []
     # reading image
     # img = cv2.imread('./res/Test.png')
-    img = cv2.imread('./allChar.png')
+    img = cv2.imread(imagePath)
 
     # resize image
     img = cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
@@ -63,6 +62,8 @@ while True:
 
     # list for storing names of shapes
     for contour in contours:
+        (contourX,contourY,contourW,contourH) = cv2.boundingRect(contour)
+        print(contourW, contourH)
         j = 0
         # here we are ignoring first counter because
         # findcontour function detects whole image as shape
@@ -79,6 +80,8 @@ while True:
 
         # finding center point of shape
         M = cv2.moments(contour)
+        x = 0
+        y = 0
         if M['m00'] != 0.0:
             x = int(M['m10']/M['m00'])
             y = int(M['m01']/M['m00'])
@@ -90,6 +93,8 @@ while True:
             j += 1
             # finding center point of shape
             M2 = cv2.moments(contour2)
+            x2 = 0
+            y2 = 0
             if M2['m00'] != 0.0:
                 x2 = int(M2['m10']/M2['m00'])
                 y2 = int(M2['m01']/M2['m00'])
@@ -137,21 +142,26 @@ while True:
 
     xDistances.sort()
     yDistances.sort()
-
+    cv2.rectangle(threshold, (xmin, ymin), (xmin + 20, ymin + 20), [0, 0, 255], 3)
     row = ymin
 
-    rectH = int(2.5 * xDistances[0])
-    rectV = int(3.5 * yDistances[0])
-    while row < xmax:
-        col = ymin
-        while col < ymax:
-            cv2.rectangle(threshold, (row, col), (row + int(1.5 * xDistances[0]), col + int(2.5 * yDistances[0])), [0, 0, 255])
-            col += rectV
+    # rectH = int(2.5 * xDistances[0])
+    # rectV = int(3.5 * yDistances[0])
+
+    rectW = 4 * contourH
+    rectH = 6 * contourW
+
+    print("grid Display")
+    while row < ymax:
+        col = xmin
+        while col < xmax:
+            cv2.rectangle(threshold, (col, row), (col + 3 * contourH, row + 5 * contourW), [0, 0, 255])
+            col += rectW
         row += rectH
 
+    print("end")
     cv2.imshow('shapes', img)
     cv2.imshow('gray', threshold)
-
 
     key = cv2.waitKey(0)
     if key == ord('q'):
@@ -178,7 +188,6 @@ while True:
 
     print(xDistances, yDistances)
     print(xTuples, yTuples)
-
 cv2.destroyAllWindows()
 
 # var = "011110"

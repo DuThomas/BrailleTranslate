@@ -2,9 +2,12 @@ import cv2
 import sys
 import brailleTable
 
+# print(brailleTable.brailleTable['b'])
+
 # read image 
 image = cv2.imread(sys.argv[1], cv2.IMREAD_GRAYSCALE)
-(retVal, newImg) = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY)
+print(image.shape)
+(retVal, newImg) = cv2.threshold(image, 160, 255, cv2.THRESH_BINARY)
 
 scale_percent = 600 # percent of original size
 width = int(newImg.shape[1] * scale_percent / 100)
@@ -46,9 +49,9 @@ if value:
 else:
     print("?")
 
-# # show the image, provide window name first
-# cv2.imshow('image window', resized)
-# # add wait key. window waits until user presses a key
-# cv2.waitKey(0)
-# # and finally destroy/close all open windows
-# cv2.destroyAllWindows()
+# show the image, provide window name first
+cv2.imshow('image window', resized)
+# add wait key. window waits until user presses a key
+cv2.waitKey(0)
+# and finally destroy/close all open windows
+cv2.destroyAllWindows()

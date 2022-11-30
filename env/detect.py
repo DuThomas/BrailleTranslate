@@ -12,23 +12,13 @@ def drawLimitDot(image, color):
     writechar.drawDot(image, (200, 10), color)
 
 # read image 
-# image = cv2.imread("testTristan.png")
-image = np.zeros((400, 400 , 3), np.uint8)
-#i -> colonnes; j -> lignes ;
-# i = 1
-# j = 1
+image = cv2.imread("./allChar.png")
 
 white = [255, 255, 255]
 black = [0, 0, 0]
 
 print(image.shape)
 h, w, _ = image.shape
-for lig in range(h):
-    for col in range(w):
-        image[lig, col] = white
-
-drawLimitDot(image, black)
-
 
 xmin = w - 1
 ymin = h - 1
@@ -49,9 +39,10 @@ for lig in range(h):
             if(col < xmin):              
                 xmin = col
             col += writechar.DOT_SIZE
+
 carac = [xmin, ymin, xmax, ymax]
 print(carac)
-# cv2.rectangle(image,(xmin-1,ymin-1),(xmax+1,ymax+1),(0,0,255),1)
+cv2.rectangle(image,(xmin-1,ymin-1),(xmax+1,ymax+1),(0,0,255),1)
 # for l in range(ymin, ymax - writechar.DOT_SIZE, pasy * writechar.DOT_SIZE):
 #     if l != 0:
 #         cv2.line(image, (xmin, l), (xmax, l), (0, 0, 255), 1)
@@ -61,11 +52,8 @@ print(carac)
 #     if k != 0:
 #         cv2.line(image, (k, ymin), (k, ymax), (0, 0, 255), 1)
 #         cv2.rectangle(image, (k, ymin), (k + writechar.DOT_SIZE - 1, ymax), (0, 0, 255), 1)
-drawLimitDot(image, white)
-writechar.write2(image, (ymin, xmin), 3 * 7, 5 * 5)
+
 # writechar.drawDot(image, (ymin, xmin), [255, 0, 0])
-
-
 
 scale_percent = 100 # percent of original size
 width = int(image.shape[1] * scale_percent / 100)
@@ -80,10 +68,8 @@ cv2.imshow('////', resized)
 cv2.waitKey(0)
 # and finally destroy/close all open windows
 
-firstChar = image[ymin + writechar.DOT_SIZE:ymin + 6 * writechar.DOT_SIZE, xmin + writechar.DOT_SIZE:xmin + 4 * writechar.DOT_SIZE]
-cv2.imshow('////', firstChar)
+# firstChar = image[ymin + writechar.DOT_SIZE:ymin + 6 * writechar.DOT_SIZE, xmin + writechar.DOT_SIZE:xmin + 4 * writechar.DOT_SIZE]
+# cv2.imshow('////', firstChar)
 # add wait key. window waits until user presses a key
-cv2.waitKey(0)
+# cv2.waitKey(0)
 cv2.destroyAllWindows()
-cv2.imwrite("firstChar.png", firstChar)
-cv2.imwrite("allChar.png", image)

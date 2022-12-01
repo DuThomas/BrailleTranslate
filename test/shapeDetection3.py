@@ -17,10 +17,12 @@ xmin = w - 1
 ymin = h - 1
 xmax = 0
 ymax = 0
+pasx = 5
+pasy = 7
 
 for lig in range(h):
     for col in range(w):
-        if(img[lig,col,0] < 125):
+        if(img[lig,col,0] == 0):
             if(lig > ymax):                
                 ymax = lig
             if(lig < ymin):               
@@ -30,7 +32,7 @@ for lig in range(h):
             if(col < xmin):              
                 xmin = col
 
-mythreshold = 100
+mythreshold = 189
 erode = 0
 dilate = 0
 while True:
@@ -80,8 +82,6 @@ while True:
 
         # finding center point of shape
         M = cv2.moments(contour)
-        x = 0
-        y = 0
         if M['m00'] != 0.0:
             x = int(M['m10']/M['m00'])
             y = int(M['m01']/M['m00'])
@@ -93,8 +93,6 @@ while True:
             j += 1
             # finding center point of shape
             M2 = cv2.moments(contour2)
-            x2 = 0
-            y2 = 0
             if M2['m00'] != 0.0:
                 x2 = int(M2['m10']/M2['m00'])
                 y2 = int(M2['m01']/M2['m00'])
@@ -142,26 +140,24 @@ while True:
 
     xDistances.sort()
     yDistances.sort()
-    cv2.rectangle(threshold, (xmin, ymin), (xmin + 20, ymin + 20), [0, 0, 255], 3)
+
     row = ymin
-
-    # rectH = int(2.5 * xDistances[0])
-    # rectV = int(3.5 * yDistances[0])
-
-    rectW = 4 * contourH
-    rectH = 6 * contourW
-
-    print("grid Display")
+    contourH -= 4
+    contourW -= 5
+    rectH = 7 * contourH
+    rectW = 5 * contourW
     while row < ymax:
         col = xmin
         while col < xmax:
-            cv2.rectangle(threshold, (col, row), (col + 3 * contourH, row + 5 * contourW), [0, 0, 255])
+            cv2.rectangle(threshold, (col, row), (col + contourW * 3, row + contourH * 5), [0, 0, 255])
+            cv2.putText(threshold, 't', (row, row), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
             col += rectW
         row += rectH
 
-    print("end")
     cv2.imshow('shapes', img)
     cv2.imshow('gray', threshold)
+
+    print((xmax - xmin) // contourW, (ymax - ymin) // contourH)
 
     key = cv2.waitKey(0)
     if key == ord('q'):
@@ -188,6 +184,7 @@ while True:
 
     print(xDistances, yDistances)
     print(xTuples, yTuples)
+
 cv2.destroyAllWindows()
 
 # var = "011110"

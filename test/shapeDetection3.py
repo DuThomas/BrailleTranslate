@@ -150,7 +150,6 @@ while True:
         col = xmin
         while col < xmax:
             cv2.rectangle(threshold, (col, row), (col + contourW * 3, row + contourH * 5), [0, 0, 255])
-            cv2.putText(threshold, 't', (row, row), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
             col += rectW
         row += rectH
 

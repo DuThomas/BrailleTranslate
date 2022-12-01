@@ -23,19 +23,19 @@ def findBox(image):
 
 image = cv2.imread('./res/allChar2.png')
 
+scale_percent = 200 # percent of original size
+width = int(image.shape[1] * scale_percent / 100)
+height = int(image.shape[0] * scale_percent / 100)
+dim = (width, height)
+
+image = cv2.resize(image, dim, interpolation = cv2.INTER_AREA)
+
 # converting image into grayscale image
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 # setting threshold of gray image
 mythreshold = 189
 _, threshold = cv2.threshold(gray, mythreshold, 255, cv2.THRESH_BINARY)
-
-scale_percent = 100 # percent of original size
-width = int(image.shape[1] * scale_percent / 100)
-height = int(image.shape[0] * scale_percent / 100)
-dim = (width, height)
-
-image = cv2.resize(image, dim, interpolation = cv2.INTER_AREA)
 
 # find the box that contains all the characters
 
@@ -60,9 +60,6 @@ for contour in contours:
         i = 1
         continue
     i += 1
-    
-    # using drawContours() function
-    # cv2.drawContours(img, [contour], 0, (0, 0, 255), 5)
 
     x = int(contourX + contourW / 2)
     y = int(contourY + contourH / 2)
@@ -116,7 +113,7 @@ while row < textBox[3]:
     row += rectH
 
 cv2.imshow('shapes', image)
-cv2.imshow('gray', threshold)
+cv2.imshow('output', threshold)
 cv2.imwrite("./res/output.png", threshold)
 
 cv2.waitKey(0)

@@ -6,9 +6,10 @@ mythreshold = 189
 erode = 0
 dilate = 0
 while True:
-    img = cv2.imread('./res/Test.png')
+    # img = cv2.imread('./res/Test.png')
+    img = cv2.imread('./res/brailleTextePhoto.png')
 
-    scale_percent = 800 # percent of original size
+    scale_percent = 20 # percent of original size
     width = int(img.shape[1] * scale_percent / 100)
     height = int(img.shape[0] * scale_percent / 100)
     dim = (width, height)
@@ -60,6 +61,8 @@ while True:
             dilate -= 1
     elif key == ord('b'):
         dilate += 1
+    elif key == ord('s'):
+        cv2.imwrite("./res/processedImage.png", outPut)
 
     print("threshold : ", mythreshold)
     print("erode : ", erode)

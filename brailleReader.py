@@ -2,7 +2,7 @@ import cv2
 import translator
 
 def findBox(image):
-    h, w, _ = image.shape
+    h, w= image.shape
     xmin = w - 1
     ymin = h - 1
     xmax = 0
@@ -10,7 +10,7 @@ def findBox(image):
 
     for lig in range(h):
         for col in range(w):
-            if(image[lig, col, 0] == 0):
+            if(image[lig, col] == 0):
                 if(lig > ymax):                
                     ymax = lig
                 if(lig < ymin):               
@@ -21,9 +21,9 @@ def findBox(image):
                     xmin = col
     return (xmin, ymin, xmax, ymax)
 
-image = cv2.imread('./res/allChar2.png')
+image = cv2.imread('./res/brailleTextePhoto.png')
 
-scale_percent = 200 # percent of original size
+scale_percent = 20 # percent of original size
 width = int(image.shape[1] * scale_percent / 100)
 height = int(image.shape[0] * scale_percent / 100)
 dim = (width, height)
@@ -34,12 +34,12 @@ image = cv2.resize(image, dim, interpolation = cv2.INTER_AREA)
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 # setting threshold of gray image
-mythreshold = 189
+mythreshold = 140
 _, threshold = cv2.threshold(gray, mythreshold, 255, cv2.THRESH_BINARY)
 
 # find the box that contains all the characters
 
-textBox = findBox(image)
+textBox = findBox(threshold)
 
 xDistances = []
 yDistances = []
@@ -90,7 +90,7 @@ for contour in contours:
     # putting shape name at center of each shape
     text = str(i)
     cv2.putText(image, text, (x, y),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (25, 155, 155), 2)
 
 cv2.rectangle(image,(textBox[0]-1,textBox[1]-1),(textBox[2]+1,textBox[3]+1),(100,100,100),1)
 cv2.rectangle(threshold,(textBox[0]-1,textBox[1]-1),(textBox[2]+1,textBox[3]+1),(100, 100, 100),1)

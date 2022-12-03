@@ -4,21 +4,25 @@ Traducteur de braille français - Projet de la mineur ***Métiers de la créatio
 
 ## Application
 
-###Au préalable:
+Application permettant d'avoir une première approche avec le braille
+
+### Prérequis
 
 Installer *tkinter*
 
 Linux OS
+
 ```bash
 python3 ./app.py
 ```
 
 Windows OS
+
 ```bash
 python ./app.py
 ```
 
-###Aperçu :
+### Aperçu
 
 ![exemple_r](res/readmeImg/exemple_r.png)
 
@@ -32,16 +36,18 @@ Pour traduire un texte en braille, il faut déjà avoir le texte.
 
 ### 1. Ecrire du texte en braille
 
-###Au préalable:
+Prérequis :
 
 Installer *cv2 (cv)*
 
 Linux OS
+
 ```bash
 python3 ./brailleWritter.py
 ```
 
 Windows OS
+
 ```bash
 python ./brailleWritter.py
 ```
@@ -66,16 +72,18 @@ Il est possible de modifier :
 
 ### 2. Lire et traduire ce texte
 
-###Au préalable:
+Prérequis :
 
 Installer *cv2 (cv)*
 
 Linux OS
+
 ```bash
 python3 ./brailleReader.py
 ```
 
 Windows OS
+
 ```bash
 python ./brailleReader.py
 ```

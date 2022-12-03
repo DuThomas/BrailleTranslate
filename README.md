@@ -37,6 +37,13 @@ Une image intitulée "brailleText.png" sera ensuite enregistrée dans le dossier
 
 ![texte braille](res/readmeImg/brailleText.png)
 
+Il est possible de modifier :
+
+- La taille des points
+- La formedes points (rond ou carré)
+- Les dimensions de l'image
+- Le point de départ d'écriture
+
 ### 2. Lire et traduire ce texte
 
 ```bash

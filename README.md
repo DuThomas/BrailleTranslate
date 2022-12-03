@@ -105,11 +105,26 @@ Cette deuxième version va permettre de gérer les photos de texte braille comme
 
 - 2.2.1. Conversion en noir et blanc puis seuillage de l'image
 
-La première étape consiste a convertir l'image en niveau de gris puis d'appliquer un **seuillage** pour n'avoir plus que des pixel noirs ou blancs.
+    La première étape consiste a convertir l'image en niveau de gris puis d'appliquer un **seuillage** pour n'avoir plus que des pixel noirs ou blancs.
 
-Il est aussi possible d'utiliser des fonctions d'**érosion** et de **dilatation** afin de supprimer d'éventuels *bruit* dans l'image.
+    Il est aussi possible d'utiliser des fonctions d'**érosion** et de **dilatation** afin de supprimer d'éventuels *bruit* dans l'image.
 
-- 2.2.2. Grouper les points d'un même caractère
+- 2.2.2. Touver et grouper les points d'un même caractère
+
+    Pour trouver les différents point de l'image, on utilise la fonction *findContour()* qui renvoie une liste de tous les contours présents dans l'image. On obtient ainsi une liste de tous les points avec différentes informations telles que leur taille et leurs coordonnées.
+
+    Pour trouver trouver les groupes de points appartenent au même caractère :
+
+  - On parcourt la liste des points (qui ne font partie d'aucun groupe)
+  - Pour chacun de ces points, on commence par le retirer de la liste et on crée un nouveau groupe de points dans lequel on le rajoute. Puis on regarde s'il y a un point qui se trouve assez proche de lui pour le rajouter dans le groupe. On recommence cette étape pour chacun des points trouvés
+
+    Voici à quoi cela ressemble :
+
+    ![photo de texte en braille](res/readmeImg/pointGroup.png)
+
+    (Les points d'un même groupe ont étés reliés par un trait)
+
+    Problème : Le caractère à la deuxième ligne, première colone (la lettre x) est considéré comme deux groupes de points car les points du haut sont trop distants de ceux du bas.
 
 Voici le résultat :
 

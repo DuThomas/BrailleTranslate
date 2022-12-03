@@ -4,11 +4,21 @@ Traducteur de braille français - Projet de la mineur ***Métiers de la créatio
 
 ## Application
 
+###Au préalable:
+
+Installer *tkinter*
+
+Linux OS
 ```bash
 python3 ./app.py
 ```
 
-Aperçu :
+Windows OS
+```bash
+python ./app.py
+```
+
+###Aperçu :
 
 ![exemple_r](res/readmeImg/exemple_r.png)
 
@@ -22,8 +32,18 @@ Pour traduire un texte en braille, il faut déjà avoir le texte.
 
 ### 1. Ecrire du texte en braille
 
+###Au préalable:
+
+Installer *cv2 (cv)*
+
+Linux OS
 ```bash
 python3 ./brailleWritter.py
+```
+
+Windows OS
+```bash
+python ./brailleWritter.py
 ```
 
 Ce script permet de d'écrire un texte en braille sur une image blanche.
@@ -46,8 +66,18 @@ Il est possible de modifier :
 
 ### 2. Lire et traduire ce texte
 
+###Au préalable:
+
+Installer *cv2 (cv)*
+
+Linux OS
 ```bash
 python3 ./brailleReader.py
+```
+
+Windows OS
+```bash
+python ./brailleReader.py
 ```
 
 Ce script va ensuite récupérer l'image enregistrée précédemment pour traduire le braille qu'elle contient.

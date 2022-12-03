@@ -82,7 +82,7 @@ def zoom(image, zoom):
 
 image = cv2.imread('./res/brailleTextePhoto.png')
 
-image = zoom(image, 20)
+image = zoom(image, 50)
 
 # converting image into grayscale image
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)

@@ -6,7 +6,7 @@ Traducteur de braille français - Projet de la mineur ***Métiers de la créatio
 
 Application permettant d'avoir une première approche avec le braille
 
-### Prérequis
+Prérequis :
 
 Installer *tkinter*
 
@@ -76,6 +76,8 @@ Prérequis :
 
 Installer *cv2 (cv)*
 
+#### 2.1. brailleReaderV1
+
 Linux OS
 
 ```bash
@@ -88,11 +90,30 @@ Windows OS
 python ./brailleReader.py
 ```
 
-Ce script va ensuite récupérer l'image enregistrée précédemment pour traduire le braille qu'elle contient.
+Ce [`script`](./brailleReader.py)
+ va ensuite récupérer l'image enregistrée précédemment pour traduire le braille qu'elle contient.
 
 Voici le résultat :
 
 ![texte traduit](res/readmeImg/output.png)
+
+#### 2.2. brailleReaderV2
+
+Cette deuxième version va permettre de gérer les photos de texte braille comme celle-ci :
+
+![photo de texte en braille](res/readmeImg/brailleTextePhoto.png)
+
+- 2.2.1. Conversion en noir et blanc puis seuillage de l'image
+
+La première étape consiste a convertir l'image en niveau de gris puis d'appliquer un **seuillage** pour n'avoir plus que des pixel noirs ou blancs.
+
+Il est aussi possible d'utiliser des fonctions d'**érosion** et de **dilatation** afin de supprimer d'éventuels *bruit* dans l'image.
+
+- 2.2.2. Grouper les points d'un même caractère
+
+Voici le résultat :
+
+![texte traduit](res/readmeImg/outputV2.png)
 
 ## Contributeurs
 

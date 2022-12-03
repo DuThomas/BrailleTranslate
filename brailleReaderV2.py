@@ -3,12 +3,11 @@ import translator
 from math import *
 
 def areCloseEnough(point1, point2, point1Size):
-    coef = 1.75
-    xDistance = point1[0] - point2[0]
-    yDistance = point1[1] - point2[1]
-    print(sqrt(xDistance ** 2 + yDistance ** 2), sqrt((coef * point1Size[0]) ** 2 + (coef * point1Size[1]) ** 2))
-    print(point1Size)
-    return sqrt(xDistance ** 2 + yDistance ** 2) <= sqrt((coef * point1Size[0]) ** 2 + (coef * point1Size[1]) ** 2)
+    xCoef = 2
+    yCoef = 2
+    xDistance = abs(point1[0] - point2[0])
+    yDistance = (point1[1] - point2[1])
+    return (xDistance <= point1Size[0] * xCoef and yDistance <= point1Size[1] * yCoef)
 
 def coordToInt(coord):
     return(int(coord[0]), int(coord[1]))
@@ -22,16 +21,12 @@ def findPoint(pointGroup):
             point = contours[pointIndex + 1]
             pointX, pointY, pointW, pointH = cv2.boundingRect(point)
             pointCenter = (pointX + pointW / 2, pointY + pointH / 2)
-            
-            print("point size : ", pointW, pointH)
-            
             if areCloseEnough(parentPointCenter, pointCenter, (pointW, pointH)):
                 pointState[pointIndex] = False
                 pointGroup.append(point)
-                # cv2.line(threshold, coordToInt(parentPointCenter), coordToInt(pointCenter), [0, 0, 255])
                 findPoint(pointGroup)
                 
-def findPointBox(pointGroup):
+def findPointBox(pointGroup, widths, heights):
     pointX, pointY, pointW, pointH = cv2.boundingRect(pointGroup[0])
     pointCenter = (pointX + pointW / 2, pointY + pointH / 2)
     xmin = pointCenter[0] - 1
@@ -50,41 +45,44 @@ def findPointBox(pointGroup):
             xmax = pointCenter[0]
         if(pointCenter[0] < xmin):              
             xmin = pointCenter[0]
+            
     xp = 1.75
-    yp = 3.5
+    yp = 3.2
+    
     if xmax - xmin < xp * pointW:
         xmax = xmin + xp * pointW
     if ymax - ymin < yp * pointH:
         ymax = ymin + yp * pointH
+        
+    boxW = xmax - xmin
+    boxH = ymax - ymin
     
-    return (xmin, ymin, xmax, ymax)
+    widths.append(boxW)
+    heights.append(boxH)
+    
+    return (xmin, ymin)
 
-def intersect(box1, box2):
-    # print(box1)
-    # print(box2)
-    # cv2.rectangle(threshold, coordToInt((box1[0], box1[1])), coordToInt((box1[2], box1[3])), [0, 0, 255])
-    # cv2.rectangle(threshold, coordToInt((box2[0], box2[1])), coordToInt((box2[2], box2[3])), [0, 0, 255])
-    box1W = (box1[2] - box1[0])
-    box1H = (box1[3] - box1[1])
-    box1Center = (box1[0] + box1W / 2, box1[1] + box1H / 2)
+def intersect(box1, box2, width, height):
+    box1Center = (box1[0] + width / 2, box1[1] + height / 2)
+    box2Center = (box2[0] + width / 2, box2[1] + height / 2)
     
-    box2W = (box2[2] - box2[0])
-    box2H = (box2[3] - box2[1])
-    box2Center = (box2[0] + box2W / 2, box2[1] + box2H / 2)
+    margin = int(width / 4)
     
     xDistance = abs(box1Center[0] - box2Center[0])
     yDistance = abs(box1Center[1] - box2Center[1])
     
-    return (xDistance < box1W / 2 + box2W / 2 and yDistance < box1H / 2 + box2H / 2)
-    
+    return (xDistance < width + 2 * margin and yDistance < height + 2 * margin)
+
+def zoom(image, zoom):
+    width = int(image.shape[1] * zoom / 100)
+    height = int(image.shape[0] * zoom / 100)
+    dim = (width, height)
+    image = cv2.resize(image, dim, interpolation = cv2.INTER_AREA)
+    return image
+
 image = cv2.imread('./res/brailleTextePhoto.png')
 
-scale_percent = 45 # percent of original size
-width = int(image.shape[1] * scale_percent / 100)
-height = int(image.shape[0] * scale_percent / 100)
-dim = (width, height)
-
-image = cv2.resize(image, dim, interpolation = cv2.INTER_AREA)
+image = zoom(image, 20)
 
 # converting image into grayscale image
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -97,12 +95,8 @@ _, threshold = cv2.threshold(gray, mythreshold, 255, cv2.THRESH_BINARY)
 contours, _ = cv2.findContours(
     threshold, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-pointGroups = []
-
 pointState = list(True for i in range(len(contours) - 1))
-
-i = 0
-
+pointGroups = []
 while True in pointState:
     mainPointIndex = pointState.index(True) # recupere l'indice d'un point sans groupe
     pointState[mainPointIndex] = False # indique que ce point d'est plus disponible (on va lui trouver son groupe)
@@ -111,51 +105,42 @@ while True in pointState:
     pointGroup = [mainPoint]
     findPoint(pointGroup)
     pointGroups.append(pointGroup)
-
-# print(pointGroups)
-
+    
 groupBoxes = []
+boxWidths = []
+boxHeights = []
 for i in range(len(pointGroups)):
-    groupBoxes.append(findPointBox(pointGroups[i]))
+    groupBoxes.append(findPointBox(pointGroups[i], boxWidths, boxHeights))
 
-for i in range(len(groupBoxes)):
+for i in range(len(groupBoxes)): # trie a bulle en fonction de la position y des rectangles
     for j in range(len(groupBoxes) - 1):
         if(groupBoxes[j][1] > groupBoxes[j + 1][1]):
             tempBox = groupBoxes[j]
             groupBoxes[j] = groupBoxes[j + 1]
             groupBoxes[j + 1] = tempBox
 
+width = int(max(boxWidths))
+height = int(max(boxHeights))
+
 newGroupeBoxes = groupBoxes.copy()
 for i in range(len(groupBoxes)):
     for j in range(len(groupBoxes)):
         if(i == j):
             continue
-        if intersect(groupBoxes[i], groupBoxes[j]):
-            print(i, "intersects ", j)
-
+        if intersect(groupBoxes[i], groupBoxes[j], width, height):
             if groupBoxes[j] in newGroupeBoxes:
                 newGroupeBoxes.remove(groupBoxes[j])
-            groupBoxes[j] = (0, 0, 0, 0)
+            groupBoxes[j] = (0, 0)
 
 for i in range(len(newGroupeBoxes)):
     tlCorner = coordToInt((newGroupeBoxes[i][0], newGroupeBoxes[i][1]))
-    brCorner = coordToInt((newGroupeBoxes[i][2], newGroupeBoxes[i][3]))
-    margin = 15
+    margin = int(width / 4)
     tlCorner = (tlCorner[0] - margin, tlCorner[1] - margin)
-    brCorner = (brCorner[0] + margin, brCorner[1] + margin)
-    brailleChar = threshold[tlCorner[1]:brCorner[1], tlCorner[0]:brCorner[0]]
+
+    brCorner = (tlCorner[0] + width + 2 * margin, tlCorner[1] + height + 2 * margin)
+    brailleChar = threshold[tlCorner[1]:tlCorner[1] + height + 2 * margin, tlCorner[0]:tlCorner[0] + width + 2 * margin]
     cv2.putText(threshold, translator.translate(brailleChar), brCorner, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100, 100, 100), 2)
-    
     cv2.rectangle(threshold, tlCorner, brCorner, [0, 0, 255])
-    cv2.putText(threshold, str(i), tlCorner, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100, 100, 100), 2)
-    
-
-counter = 0
-# for pointGroup in pointGroups:
-#     point = (int(pointGroup[0][0]), int(pointGroup[0][1]))
-#     cv2.putText(threshold, str(counter), point, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100, 100, 100), 2)
-#     counter += 1
-
 
 cv2.imshow('shapes', image)
 cv2.imshow('output', threshold)

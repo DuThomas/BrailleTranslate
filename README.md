@@ -107,13 +107,13 @@ Cette deuxième version va permettre de gérer les photos de texte braille comme
 
   La première étape consiste a convertir l'image en niveau de gris puis d'appliquer un **seuillage** pour n'avoir plus que des pixel noirs ou blancs.
 
-  Il est aussi possible d'utiliser des fonctions d'**érosion** et de **dilatation** afin de supprimer d'éventuels *bruit* dans l'image.
+  Il est aussi possible d'utiliser des fonctions d'**érosion** et de **dilatation** afin de supprimer d'éventuels *bruits* dans l'image.
 
 - 2.2.2. Touver et grouper les points d'un même caractère
 
-  Pour trouver les différents point de l'image, on utilise la fonction *findContour()* qui renvoie une liste de tous les contours présents dans l'image. On obtient ainsi une liste de tous les points avec différentes informations telles que leur taille et leurs coordonnées.
+  Pour trouver les différents points de l'image, on utilise la fonction *findContour()* qui renvoie une liste de tous les contours présents dans l'image. On obtient ainsi une liste de tous les points avec différentes informations telles que leur taille et leurs coordonnées.
 
-  Pour trouver trouver les groupes de points appartenent au même caractère :
+  Pour trouver les groupes de points appartenant au même caractère :
 
   - On parcourt la liste des points (qui ne font partie d'aucun groupe)
   - Pour chacun de ces points, on commence par le retirer de la liste et on crée un nouveau groupe de points dans lequel on le rajoute. Puis on regarde s'il y a un point qui se trouve assez proche de lui pour le rajouter dans le groupe. On recommence cette étape pour chacun des points trouvés
@@ -128,7 +128,7 @@ Cette deuxième version va permettre de gérer les photos de texte braille comme
 
 - 2.2.3. Déterminer la zone de chaque caractère
 
-  Pour trouver la zone contenant le caractère entier, on commence par recupérer les coordonnées du point le plus en haut à gauche. Ce sera le coin suéprieur gauche de la zone.
+  Pour trouver la zone contenant le caractère entier, on commence par recupérer les coordonnées du point le plus en haut à gauche. Ce sera le coin supérieur gauche de la zone.
   
   La longueur et la largeur de la zone peuvent être calculées :
   - En fonction de la taille d'un point.

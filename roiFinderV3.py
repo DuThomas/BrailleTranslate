@@ -4,14 +4,18 @@ import translator
 import brailleReaderV3debug as brailleReaderV3
 from src.utils import *
         
-def isSquare(width, height):
+def isSquare(point):
     gap = 20 # in %
     #print(str(height * 100 / 120) + " - - " + str(width) + " - - " + str(height * 100 / 80))
-    return width * height > sizeThreshold and height * 100 / (100 + gap) < width < height * 100 / (100 - gap)
+    return point.width * point.height > sizeThreshold and point.height * 100 / (100 + gap) < point.width < point.height * 100 / (100 - gap)
 
-def isBigEnough(width, height):
+def isBigEnough(point):
     minLenght = 7
-    return width > minLenght and height > minLenght
+    return point.width > minLenght and point.height > minLenght
+
+def hasAvgArea(point, avgArea):
+    areaGap = 25 # in %
+    return (calcArea(point) > avgArea * (100 + areaGap) / 100 or calcArea(point) < avgArea * (100 - areaGap) / 100)
 
 def drawPointsBox(image, box):
     if isinstance(box, tuple):
@@ -19,21 +23,21 @@ def drawPointsBox(image, box):
 
 def getPointsBox(points):
     if len(points) > 0:
-        xMin = points[0][0]
-        xMax = points[0][0]
-        yMin = points[0][1]
-        yMax = points[0][1]
+        xMin = points[0].x
+        xMax = points[0].x
+        yMin = points[0].y
+        yMax = points[0].y
         for point in points:
             #cv2.rectangle(image, ((int)(point[0] - point[2] / 2), (int)(point[1] - point[3] / 2)),
             #((int)(point[0] + point[2] / 2), (int)(point[1] + point[3] / 2)), (0, 0, 0), 1)
-            if point[0] > xMax:
-                xMax = point[0]
-            if point[0] < xMin:
-                xMin = point[0]
-            if point[1] > yMax:
-                yMax = point[1]
-            if point[1] < yMin:
-                yMin = point[1]
+            if point.x + point.width > xMax:
+                xMax = point.x + point.width
+            if point.x < xMin:
+                xMin = point.x
+            if point.y + point.height > yMax:
+                yMax = point.y + point.height
+            if point.y < yMin:
+                yMin = point.y
         return (xMin, yMin, xMax, yMax)
     else:
         print("dddd")
@@ -63,7 +67,7 @@ def addMargin(box, margin, image):
     return (xMin, yMin, xMax, yMax)
 
 def calcArea(point):
-    return point[2] * point[3]
+    return point.width * point.height
 
 def calcAvgArea(points):
     if len(points) > 0:
@@ -85,8 +89,8 @@ mythreshold = 115
 
 while True:
     points = []
-    # ret, image = cap.read()
-    image = cv2.imread('./res/videoImage.png')
+    ret, image = cap.read()
+    # image = cv2.imread('./res/videoImage.png')
     
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     #gray = gray0.copy()
@@ -97,53 +101,41 @@ while True:
     # using a findContours() function
     contours, _ = cv2.findContours(
         thresholdedImage, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
+    
+    points = list(brailleReaderV3.Point(contour) for contour in contours)
+    
     i = 0
 
-    bestContours = []
+    bestPoints = []
     # list for storing names of shapes
-    for contour in contours:
-        (contourX,contourY,contourW,contourH) = cv2.boundingRect(contour)
-        # here we are ignoring first counter because
-        # findcontour function detects whole image as shape
+    for point in points:
         if i == 0:
             i = 1
             continue
-        i += 1
-
-        x = int(contourX + contourW / 2)
-        y = int(contourY + contourH / 2)
         
-        if isSquare(contourW, contourH) and isBigEnough(contourW, contourH):
-            # putting shape name at center of each shape
-            # text = str(i)
-            # cv2.putText(image, text, (x, y),
-            #             cv2.FONT_HERSHEY_SIMPLEX, 0.6, (25, 155, 155), 1)
-            # cv2.rectangle(image, (contourX, contourY), (contourX + contourW, contourY + contourH), (0, 0, 0), 1)
-            bestContours.append(contour)
-            points.append((x,y,contourW,contourH))
-            cv2.rectangle(thresholdedImage, (contourX, contourY), (contourX + contourW, contourY + contourH), (125, 125, 125), 2)
+        if isSquare(point) and isBigEnough(point):
+            bestPoints.append(point)
+            point.frame(thresholdedImage, 1, (125, 255, 125), 2)
         else:
-            cv2.rectangle(thresholdedImage, (contourX, contourY), (contourX + contourW, contourY + contourH), (125, 125, 125), 1)
-
+            point.frame(thresholdedImage, 1, (125, 125, 125), 1)
     avgArea = calcAvgArea(points)
-    areaGap = 25 # in %
 
-    for i in range(len(points)-1, -1, -1):
-        if calcArea(points[i]) > avgArea * (100 + areaGap) / 100 or calcArea(points[i]) < avgArea * (100 - areaGap) / 100:
-            cv2.rectangle(thresholdedImage, (points[i][0], points[i][1]), (points[i][0] + points[i][2], points[i][1] + points[i][3]), (0, 255, 0), 1)
-            del points[i]
-            del bestContours[i]
+    i += 1
 
-    if len(points) > 1:
-        pointsBox = getPointsBox(points)
+    for point in bestPoints:
+        if not hasAvgArea(point, avgArea):
+            point.frame(thresholdedImage, 1, (0, 255, 0))
+            # del points[i]
+            bestPoints.remove(point)
+
+    if len(bestPoints) > 1:
+        pointsBox = getPointsBox(bestPoints)
         pointsBox = addMargin(pointsBox, 15, image)
         
         if (not pointsBox[1] == pointsBox[3]) and (not pointsBox[0] == pointsBox[2]):
             roi = image[pointsBox[1]:pointsBox[3], pointsBox[0]:pointsBox[2]]
-            print("Points : ", len(bestContours))
             cv2.imshow("ROI", roi) 
-            cv2.imshow("Result", brailleReaderV3.translate(image.copy(), roi, (pointsBox[0], pointsBox[1]), bestContours, mythreshold))
+            cv2.imshow("Result", brailleReaderV3.translate(image.copy(), roi, (pointsBox[0], pointsBox[1]), bestPoints, mythreshold))
         # drawPointsBox(image, pointsBox)
     
     cv2.imshow("Image", image)

@@ -52,8 +52,8 @@ def translate(image):
                 if(i == int((col + 1) * w/2)):
                     i = int(col * w/2)
                     j += 1
-            print(blackCounter / ((w/2) * (h/3)))
-            if blackCounter / ((w/2) * (h/3)) > minRate:
+            # print(blackCounter / ((w/2) * (h/3)))
+            if (h * w / 6) > 0 and blackCounter / (h * w / 6) > minRate:
                 character.append(1)
             else:
                 character.append(0)

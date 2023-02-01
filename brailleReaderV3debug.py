@@ -6,6 +6,11 @@ class Point:
     def __init__(self, contour):
         (self.x, self.y, self.width, self.height) = cv2.boundingRect(contour)
         self.haveAGroup = False
+    
+    def frame(self, image, margin, color = (0, 0, 0), thikness = 1):
+        tlCorner = (self.x - margin, self.y - margin)
+        brCorner = (self.x + self.width + margin, self.y + self.height + margin)
+        cv2.rectangle(image, coordToInt(tlCorner), coordToInt(brCorner), color, thikness)
 
 def areCloseEnough(point1, point2):
     xCoef = 2
@@ -46,12 +51,12 @@ def findPointBox(pointGroup, widths, heights, image, roiTLC):
             xmax = pointCenter[0]
         if(pointCenter[0] < xmin):              
             xmin = pointCenter[0]
-
-    cv2.rectangle(image, coordToInt((xmin, ymin)), coordToInt((xmax, ymax)), [0, 0, 255])
             
     xp = 1.75
     yp = 3.2
-    margin = 5
+
+    margin = max([pointGroup[0].width, pointGroup[0].height]) / 2
+    cv2.rectangle(image, coordToInt((xmin - margin, ymin - margin)), coordToInt((xmax + margin, ymax + margin)), (0, 0, 0), 1)
     if xmax - xmin < xp * pointGroup[0].width:
         xmax = xmin + xp * pointGroup[0].width
     if ymax - ymin < yp * pointGroup[0].height:
@@ -62,7 +67,6 @@ def findPointBox(pointGroup, widths, heights, image, roiTLC):
     
     widths.append(boxW)
     heights.append(boxH)
-    
     
     return (xmin, ymin)
 
@@ -84,14 +88,13 @@ def zoom(image, zoom):
     image = cv2.resize(image, dim, interpolation = cv2.INTER_AREA)
     return image
 
-def translate(image, roi, roiTLC, contours, mythreshold):
+def translate(image, roi, roiTLC, points, mythreshold):
     gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
     # setting threshold of gray image
     _, threshold = cv2.threshold(gray, mythreshold, 255, cv2.THRESH_BINARY)
     
     cv2.imshow("Thresholded ROI", threshold)
-        # using a findContours() function
-    points = list(Point(contour) for contour in contours)
+
     pointGroups = []
     allPointsHaveGroup = False
     loopCount = 0

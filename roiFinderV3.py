@@ -2,13 +2,8 @@ import cv2
 from math import *
 import translator
 import brailleReaderV3debug as brailleReaderV3
-
-def Point :
-    def __init__(self, contour):
-        (self.x, self.y, self.width, self.height) = cv2.boundingRect(contour)
-        self.haveAGroup = False
+from src.utils import *
         
-
 def isSquare(width, height):
     gap = 20 # in %
     #print(str(height * 100 / 120) + " - - " + str(width) + " - - " + str(height * 100 / 80))
@@ -86,11 +81,12 @@ image0 = cv2.imread('./res/videoImage.png')
 gray0 = cv2.cvtColor(image0, cv2.COLOR_BGR2GRAY)
 
 sizeThreshold = 120
-mythreshold = 80
+mythreshold = 115
 
 while True:
     points = []
-    ret, image = cap.read()
+    # ret, image = cap.read()
+    image = cv2.imread('./res/videoImage.png')
     
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     #gray = gray0.copy()
@@ -145,6 +141,7 @@ while True:
         
         if (not pointsBox[1] == pointsBox[3]) and (not pointsBox[0] == pointsBox[2]):
             roi = image[pointsBox[1]:pointsBox[3], pointsBox[0]:pointsBox[2]]
+            print("Points : ", len(bestContours))
             cv2.imshow("ROI", roi) 
             cv2.imshow("Result", brailleReaderV3.translate(image.copy(), roi, (pointsBox[0], pointsBox[1]), bestContours, mythreshold))
         # drawPointsBox(image, pointsBox)

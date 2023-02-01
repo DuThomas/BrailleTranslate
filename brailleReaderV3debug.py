@@ -2,42 +2,42 @@ import cv2
 import translator
 from math import *
 
-def areCloseEnough(point1, point2, point1Size):
+class Point:
+    def __init__(self, contour):
+        (self.x, self.y, self.width, self.height) = cv2.boundingRect(contour)
+        self.haveAGroup = False
+
+def areCloseEnough(point1, point2):
     xCoef = 2
     yCoef = 2
-    xDistance = abs(point1[0] - point2[0])
-    yDistance = (point1[1] - point2[1])
-    return (xDistance <= point1Size[0] * xCoef and yDistance <= point1Size[1] * yCoef)
+    xDistance = abs(point1.x - point2.x)
+    yDistance = abs(point1.y - point2.y)
+    return (xDistance <= point1.width * xCoef and yDistance <= point1.height * yCoef)
 
 def coordToInt(coord):
     return(int(coord[0]), int(coord[1]))
 
-def findPoint(pointGroup, contours, pointState, image, roiTLC):
+def findPoint(pointGroup, points, image, roiTLC):
     parentPoint = pointGroup[-1]
-    parentPointX, parentPointY, parentPointW, parentPointH = cv2.boundingRect(parentPoint)
-    parentPointCenter = (parentPointX + parentPointW / 2, parentPointY + parentPointH / 2)
-    for pointIndex in range(len(contours) - 1):
-        if pointState[pointIndex]:
-            point = contours[pointIndex + 1]
-            pointX, pointY, pointW, pointH = cv2.boundingRect(point)
-            pointCenter = (pointX + pointW / 2, pointY + pointH / 2)
-            if areCloseEnough(parentPointCenter, pointCenter, (pointW, pointH)):
-                pointState[pointIndex] = False
+    parentPointCenter = (parentPoint.x + parentPoint.width / 2, parentPoint.y + parentPoint.height / 2)
+    for point in points:
+        if not point.haveAGroup:
+            pointCenter = (point.x + point.width / 2, point.y + point.height / 2)
+            if areCloseEnough(parentPoint, point):
+                point.haveAGroup = True
                 pointGroup.append(point)
-                findPoint(pointGroup, contours, pointState, image, roiTLC)
+                findPoint(pointGroup, points, image, roiTLC)
                 cv2.line(image, ((int)(parentPointCenter[0]), (int)(parentPointCenter[1])), ((int)(pointCenter[0]), (int)(pointCenter[1])), (0, 0, 0), 1)
                 
 def findPointBox(pointGroup, widths, heights, image, roiTLC):
-    pointX, pointY, pointW, pointH = cv2.boundingRect(pointGroup[0])
-    pointCenter = (pointX + pointW / 2, pointY + pointH / 2)
+    pointCenter = (pointGroup[0].x + pointGroup[0].width / 2, pointGroup[0].y + pointGroup[0].height / 2)
     xmin = pointCenter[0] - 1
     ymin = pointCenter[1] - 1
     xmax = 0
     ymax = 0
 
     for point in pointGroup:
-        pointX, pointY, pointW, pointH = cv2.boundingRect(point)
-        pointCenter = (pointX + pointW / 2, pointY + pointH / 2)
+        pointCenter = (point.x + point.width / 2, point.y + point.height / 2)
         if(pointCenter[1] > ymax):                
             ymax = pointCenter[1]
         if(pointCenter[1] < ymin):               
@@ -46,15 +46,16 @@ def findPointBox(pointGroup, widths, heights, image, roiTLC):
             xmax = pointCenter[0]
         if(pointCenter[0] < xmin):              
             xmin = pointCenter[0]
+
+    cv2.rectangle(image, coordToInt((xmin, ymin)), coordToInt((xmax, ymax)), [0, 0, 255])
             
     xp = 1.75
     yp = 3.2
-    margin = 7
-    cv2.rectangle(image, ((int)(xmin - margin), (int)(ymin - margin)), ((int)(xmax + margin), (int)(ymax + margin)), (0, 0, 0), 1)
-    if xmax - xmin < xp * pointW:
-        xmax = xmin + xp * pointW
-    if ymax - ymin < yp * pointH:
-        ymax = ymin + yp * pointH
+    margin = 5
+    if xmax - xmin < xp * pointGroup[0].width:
+        xmax = xmin + xp * pointGroup[0].width
+    if ymax - ymin < yp * pointGroup[0].height:
+        ymax = ymin + yp * pointGroup[0].height
         
     boxW = xmax - xmin
     boxH = ymax - ymin
@@ -89,19 +90,26 @@ def translate(image, roi, roiTLC, contours, mythreshold):
     _, threshold = cv2.threshold(gray, mythreshold, 255, cv2.THRESH_BINARY)
     
     cv2.imshow("Thresholded ROI", threshold)
-    # using a findContours() function
-
-    pointState = list(True for i in range(len(contours) - 1))
+        # using a findContours() function
+    points = list(Point(contour) for contour in contours)
     pointGroups = []
-    while True in pointState:
-        mainPointIndex = pointState.index(True) # recupere l'indice d'un point sans groupe
-        pointState[mainPointIndex] = False # indique que ce point d'est plus disponible (on va lui trouver son groupe)
-        mainPoint = contours[mainPointIndex + 1]
+    allPointsHaveGroup = False
+    loopCount = 0
+    while not allPointsHaveGroup:
+        pointIndex = 0
+        while pointIndex < len(points) and points[pointIndex].haveAGroup:
+            pointIndex += 1
+        if pointIndex < len(points) and not points[pointIndex].haveAGroup:
+            mainPoint = points[pointIndex]  # point sans groupe
+            points[pointIndex].haveAGroup = True # indique que ce point d'est plus disponible (on va lui trouver son groupe)
+            pointGroup = [mainPoint]
 
-        pointGroup = [mainPoint]
-        findPoint(pointGroup, contours, pointState, image, roiTLC)
-        pointGroups.append(pointGroup)
-        
+            findPoint(pointGroup, points, image, roiTLC)
+            pointGroups.append(pointGroup)
+        else:
+            allPointsHaveGroup = True
+        loopCount += 1
+    
     groupBoxes = []
     boxWidths = []
     boxHeights = []
@@ -123,7 +131,7 @@ def translate(image, roi, roiTLC, contours, mythreshold):
     for i in range(len(groupBoxes)):
         for j in range(len(groupBoxes)):
             if(i == j):
-                continue
+                continue    
             if intersect(groupBoxes[i], groupBoxes[j], width, height):
                 if groupBoxes[j] in newGroupeBoxes:
                     newGroupeBoxes.remove(groupBoxes[j])

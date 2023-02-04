@@ -6,11 +6,20 @@ class Point:
     def __init__(self, contour):
         (self.x, self.y, self.width, self.height) = cv2.boundingRect(contour)
         self.haveAGroup = False
+        self.id = None
     
-    def frame(self, image, margin, color = (0, 0, 0), thikness = 1):
+    def frame(self, image, margin, color = (0, 0, 0), thickness = 1):
         tlCorner = (self.x - margin, self.y - margin)
         brCorner = (self.x + self.width + margin, self.y + self.height + margin)
-        cv2.rectangle(image, coordToInt(tlCorner), coordToInt(brCorner), color, thikness)
+        cv2.rectangle(image, coordToInt(tlCorner), coordToInt(brCorner), color, thickness)
+
+    def circle(self, image, color = (0, 0, 0), thickness = 1):
+        center = (self.x + self.width / 2, self.y + self.height / 2)
+        cv2.circle(image, coordToInt(center), int((self.width + self.height) / 4), color, thickness)
+
+    def displayId(self, image, color = (0, 0, 0), thickness = 1):
+        center = (self.x + self.width / 2, self.y + self.height / 2)
+        cv2.putText(image, str(self.id), coordToInt(center), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, thickness)
 
 def areCloseEnough(point1, point2):
     xCoef = 2
@@ -31,8 +40,9 @@ def findPoint(pointGroup, points, image, roiTLC):
             if areCloseEnough(parentPoint, point):
                 point.haveAGroup = True
                 pointGroup.append(point)
-                findPoint(pointGroup, points, image, roiTLC)
-                cv2.line(image, ((int)(parentPointCenter[0]), (int)(parentPointCenter[1])), ((int)(pointCenter[0]), (int)(pointCenter[1])), (0, 0, 0), 1)
+                if len(pointGroup) < 5 :
+                    findPoint(pointGroup, points, image, roiTLC)
+                    cv2.line(image, ((int)(parentPointCenter[0]), (int)(parentPointCenter[1])), ((int)(pointCenter[0]), (int)(pointCenter[1])), (0, 0, 0), 1)
                 
 def findPointBox(pointGroup, widths, heights, image, roiTLC):
     pointCenter = (pointGroup[0].x + pointGroup[0].width / 2, pointGroup[0].y + pointGroup[0].height / 2)

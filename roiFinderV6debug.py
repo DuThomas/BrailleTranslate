@@ -3,97 +3,117 @@ from math import *
 import translator
 import brailleReaderV6debug  as brailleReader
 from src.utils import *
-        
-def isSquare(point):
+
+
+def is_square(point):
     gap = 20 # in %
-    #print(str(height * 100 / 120) + " - - " + str(width) + " - - " + str(height * 100 / 80))
-    return point.height * 100 / (100 + gap) < point.width < point.height * 100 / (100 - gap)
 
-def isBigEnough(point):
-    minLenght = 7
-    return point.width > minLenght and point.height > minLenght
+    return (point.height * 100 / (100+gap)
+            < point.width
+            < point.height * 100 / (100-gap))
 
-def hasAvgArea(point, avgArea):
+
+def is_big_enough(point):
+    min_lenght = 7
+    return point.width > min_lenght and point.height > min_lenght
+
+
+def has_avg_area(point, avg_area):
     areaGap = 25 # in %
-    return (avgArea * (100 - areaGap) / 100 < calcArea(point) < avgArea * (100 - areaGap) / 100)
+    return (avg_area * (100-areaGap) / 100
+            < calc_area(point)
+            < avg_area * (100-areaGap) / 100)
 
-def hasAvgSize(point, avgSize):
+
+def has_avg_size(point, avgSize):
     sizeGap = 20 # in %
-    correctWidth = (avgSize[0] * (100 - sizeGap) / 100 < point.width < avgSize[0] * (100 + sizeGap) / 100)
-    correctHeight = (avgSize[1] * (100 - sizeGap) / 100 < point.width < avgSize[1] * (100 + sizeGap) / 100)
-    return correctWidth and correctHeight
+    correct_width = (avgSize[0] * (100-sizeGap) / 100
+                     < point.width
+                     < avgSize[0] * (100+sizeGap) / 100)
+    
+    correct_height = (avgSize[1] * (100-sizeGap) / 100
+                      < point.width
+                      < avgSize[1] * (100+sizeGap) / 100)
+    return correct_width and correct_height
 
-def drawPointsBox(image, box):
+
+def draw_points_box(image, box):
     if isinstance(box, tuple):
         cv2.rectangle(image, (box[0], box[1]), (box[2], box[3]), (0, 0, 0), 3)
 
-def getPointsBox(points):
+
+def get_point_box(points):
     if len(points) > 0:
-        xMin = points[0].x
-        xMax = points[0].x
-        yMin = points[0].y
-        yMax = points[0].y
+        x_min = points[0].x
+        x_max = points[0].x
+        y_min = points[0].y
+        y_max = points[0].y
         for point in points:
-            xMin = min(xMin, point.x)
-            xMax = max(xMax, point.x + point.width)
-            yMin = min(yMin, point.y)
-            yMax = max(yMax, point.y + point.height)
+            x_min = min(x_min, point.x)
+            x_max = max(x_max, point.x + point.width)
+            y_min = min(y_min, point.y)
+            y_max = max(y_max, point.y + point.height)
 
-        return (xMin, yMin, xMax, yMax)
-    else:
-        print("dddd")
+        return (x_min, y_min, x_max, y_max)
 
-def addMargin(box, margin, image):
+def add_margin(box, margin, image):
     h, w, _ = image.shape
-    xMin, yMin, xMax, yMax = box[0], box[1], box[2], box[3]
+    x_min, y_min, x_max, y_max = box[0], box[1], box[2], box[3]
 
-    xMin = max(0, xMin - margin)
-    yMin = max(0, yMin - margin)
-    xMax = min(w - 1, xMax + margin)
-    yMax = min(h - 1, yMax + margin)
+    x_min = max(0, x_min - margin)
+    y_min = max(0, y_min - margin)
+    x_max = min(w - 1, x_max + margin)
+    y_max = min(h - 1, y_max + margin)
 
-    return (xMin, yMin, xMax, yMax)
+    return (x_min, y_min, x_max, y_max)
 
-def calcArea(point):
+
+def calc_area(point):
     """  return the air of a point """
     return point.width * point.height
 
-def calcAvgArea(points):
+
+def calc_avg_area(points):
     if len(points) > 0:
         area = 0 
         for point in points:
-            area += calcArea(point)
+            area += calc_area(point)
+
         return area / len(points)
 
-def calcAreaVariance(points, avgArea):
+
+def calc_area_variance(points, avg_area):
     v = 0
     n = len(points)
     for point in points:
-        v += calcArea(point)**2
-    v = v / n - avgArea**2
+        v += calc_area(point)**2
+    v = v / n-avg_area**2
+
     return v
         
-def calcAvgSize(points):
-    widthSum = 0
-    heightSum = 0
-    nbPoint = len(points)
+def calc_avg_size(points):
+    width_sum = 0
+    height_sum = 0
+    nb_point = len(points)
     for point in points:
-        widthSum += point.width
-        heightSum += point.height
+        width_sum += point.width
+        height_sum += point.height
     
-    avgWidth = widthSum / nbPoint
-    avgHeight = heightSum / nbPoint
-    return (avgWidth, avgHeight)
+    avg_width = width_sum / nb_point
+    avg_height = height_sum / nb_point
+
+    return (avg_width, avg_height)
 
 
-def acsSortByArea(points):
+def area_asc_sort(points):
     for i in range(1, len(points)):
         key_item = points[i]
         j = i - 1
-        while j >= 0 and calcArea(points[j]) > calcArea(key_item):
+        while j >= 0 and calc_area(points[j]) > calc_area(key_item):
             points[j + 1] = points[j]
             j -= 1
         points[j + 1] = key_item
+
     return points
 
 
@@ -101,34 +121,38 @@ def find_valid_points(points, image):
     count = 1
     best_points = []
     for point in points[1:]: # skip first point which is the entire frame
-        if isSquare(point) and isBigEnough(point):
+        if is_square(point) and is_big_enough(point):
             point.id = count
-            bestPoints.append(point)
+            best_points.append(point)
             point.draw_frame(image, 0, (200, 200, 200), 2)
         else:
             point.draw_frame(image, 0, (125, 125, 125), 1)
         count += 1
-    return bestPoints
+
+    return best_points
 
 
 def remove_big_points(points):
-    avgArea = calcAvgArea(points)
-    while calcAreaVariance(points, avgArea) > 1000:
-        if abs(calcArea(points[-1]) - avgArea) > abs(calcArea(points[0]) - avgArea):
-            pointIndex = -1
+    avg_area = calc_avg_area(points)
+    while calc_area_variance(points, avg_area) > 1000:
+        if (abs(calc_area(points[-1]) - avg_area)
+            > abs(calc_area(points[0]) - avg_area)):
+            point_index = -1
         else:
-            pointIndex = 0
+            point_index = 0
 
-        points[pointIndex].draw_circle(thresholdedImage, (111, 111, 111), 2)
-        del points[pointIndex]
+        points[point_index].draw_circle(thresholded_image, (111, 111, 111), 2)
+        del points[point_index]
 
-        avgArea = calcAvgArea(points)
+        avg_area = calc_avg_area(points)
+
 
 def display_points_id(image, points):
     for i in range(len(points)):
             points[i].id = i
-            points[i].displayId(image, (55, 55, 55), 2)
+            points[i].display_id(image, (55, 55, 55), 2)
 # converting image into grayscale image
+
 
 cap = cv2.VideoCapture(0)
 image0 = cv2.imread('./res/videoImage.png')
@@ -136,8 +160,8 @@ image0 = cv2.imread('./res/videoImage.png')
 # converting image into grayscale image
 gray0 = cv2.cvtColor(image0, cv2.COLOR_BGR2GRAY)
 
-sizeThreshold = 120
-mythreshold = 115
+size_threshold = 120
+mythreshold_id = 115
 
 while True:
     ret, image = cap.read()
@@ -148,77 +172,84 @@ while True:
     #gray = gray0.copy()
     #image = image0.copy()
     
-    _, thresholdedImage = cv2.threshold(gray, mythreshold, 255, cv2.THRESH_BINARY)
+    _, thresholded_image = cv2.threshold(gray, mythreshold_id, 255,
+                                         cv2.THRESH_BINARY)
 
     # using a findContours() functioncircle
     contours, _ = cv2.findContours(
-        thresholdedImage, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        thresholded_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     
     points = list(brailleReader.Point(contour) for contour in contours)
-    bestPoints = []
+    best_points = []
 
     if len(points) > 1: 
-        bestPoints = find_valid_points(points, thresholdedImage)
+        best_points = find_valid_points(points, thresholded_image)
 
-    acsSortByArea(bestPoints)
+    area_asc_sort(best_points)
 
-    if len(bestPoints) > 1:
-        remove_big_points(bestPoints)
+    if len(best_points) > 1:
+        remove_big_points(best_points)
 
-        pointsBox = getPointsBox(bestPoints)
-        # print("->", pointsBox, image.shape, (pointsBox[2] - pointsBox[0], pointsBox[3] - pointsBox[1]))
-        pointsBox = addMargin(pointsBox, 15, image)
+        points_box = get_point_box(best_points)
+        # print("->", points_box, image.shape, (points_box[2] - points_box[0], points_box[3] - points_box[1]))
+        points_box = add_margin(points_box, 15, image)
+
+        roi = image.copy()
+        roi = roi[points_box[1]:points_box[3], points_box[0]:points_box[2]]
+        # print(points_box, image.shape, (points_box[2] - points_box[0], points_box[3] - points_box[1]))
+        cv2.imshow("ROI", roi) 
         
-        if (not pointsBox[1] == pointsBox[3]) and (not pointsBox[0] == pointsBox[2]) or True:
-            roi = image.copy()
-            roi = roi[pointsBox[1]:pointsBox[3], pointsBox[0]:pointsBox[2]]
-            # print(pointsBox, image.shape, (pointsBox[2] - pointsBox[0], pointsBox[3] - pointsBox[1]))
-            cv2.imshow("ROI", roi) 
+        braille_chars = brailleReader.translate(image, best_points)
+        for braille_char in braille_chars:
+            brailleReader.display_boxes(image, braille_chars)
+
+
+        gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+        # setting threshold of gray image
+        _, threshold = cv2.threshold(gray, mythreshold_id, 255, cv2.THRESH_BINARY)
+        
+        cv2.imshow("Thresholded ROI", threshold)
+
+        for i in range(len(braille_chars)):
+            top_left_corner2 = coordToInt((braille_chars[i].x, braille_chars[i].y))
+            bot_right_corner2 = (top_left_corner2[0] + int(braille_chars[i].width),
+                         top_left_corner2[1] + int(braille_chars[i].height))
             
-            braille_chars = brailleReader.translate(image, bestPoints)
-            for braille_char in braille_chars:
-                brailleReader.display_boxes(image, braille_chars)
-
-
-            gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-            # setting threshold of gray image
-            _, threshold = cv2.threshold(gray, mythreshold, 255, cv2.THRESH_BINARY)
+            top_left_corner = (top_left_corner2[0] - points_box[0]
+                               , top_left_corner2[1] - points_box[1])
+            bot_right_corner = (top_left_corner[0] + int(braille_chars[i].width),
+                        top_left_corner[1] + int(braille_chars[i].height))
             
-            cv2.imshow("Thresholded ROI", threshold)
+            braille_char = threshold[top_left_corner[1]:bot_right_corner[1],
+                                     top_left_corner[0]:bot_right_corner[0]]
 
-            for i in range(len(braille_chars)):
-                tlCorner2 = coordToInt((braille_chars[i].x, braille_chars[i].y))
-                brCorner2 = (tlCorner2[0] + int(braille_chars[i].width), tlCorner2[1] + int(braille_chars[i].height))
-                tlCorner = (tlCorner2[0] - pointsBox[0], tlCorner2[1] - pointsBox[1])
-                brailleChar = threshold[tlCorner[1]:tlCorner[1] + int(braille_chars[i].height), tlCorner[0]:tlCorner[0] + int(braille_chars[i].width)]
-
-                traslation = translator.translate(brailleChar)
-                cv2.putText(image, traslation, brCorner2, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100, 100, 100), 2)
-                cv2.rectangle(image, tlCorner2, brCorner2, [0, 0, 255])
+            traslation = translator.translate(braille_char)
+            cv2.putText(image, traslation, bot_right_corner2, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100, 100, 100), 2)
+            cv2.rectangle(image, top_left_corner2, bot_right_corner2, [0, 0, 255])
 
 
-            cv2.imshow("Result", image)
+        cv2.imshow("Result", image)
 
-        # drawPointsBox(image, pointsBox)
-        display_points_id(image, bestPoints)
-            # print(i, " : ", calcArea(bestPoints[i]), avgArea)
+        # draw_points_box(image, points_box)
+        display_points_id(image, best_points)
+            # print(i, " : ", calc_area(best_points[i]), avg_area)
     
     cv2.imshow("Image", image)
-    cv2.imshow("Threshlolded", thresholdedImage)
+    cv2.imshow("Threshlolded", thresholded_image)
 
     key = cv2.waitKey(100)
     if key == ord('q'):
         break
     elif key == ord('t'):
-        if mythreshold > 0:
-            mythreshold -= 1
+        if mythreshold_id > 0:
+            mythreshold_id -= 1
     elif key == ord('y'):
-        mythreshold += 1
+        mythreshold_id += 1
     elif key == ord('g'):
-        if sizeThreshold > 0:
-            sizeThreshold -= 1
+        if size_threshold > 0:
+            size_threshold -= 1
     elif key == ord('h'):
-        sizeThreshold += 1
+        size_threshold += 1
     if key != -1:
-        print("Size Threshold (g/h): ", sizeThreshold)
-        print("Threshold (t/y) : ", mythreshold)
+        print("Size Threshold (g/h): ", size_threshold)
+        print("Threshold (t/y) : ", mythreshold_id)

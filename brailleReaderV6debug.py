@@ -6,27 +6,30 @@ LOSS = 0.8
 XP = 3 * LOSS
 YP = 5 * LOSS
 
+X_DISTANCE_COEF = 2
+Y_DISTANCE_COEF = 2
+
 class Point:
     def __init__(self, contour):
         (self.x, self.y, self.width, self.height) = cv2.boundingRect(contour)
-        self.haveAGroup = False
+        self.have_group = False
         self.id = None
     
 
-    def draw_frame(self, image, margin, color = (0, 0, 0), thickness = 1):
-        tlCorner = (self.x - margin, self.y - margin)
-        brCorner = (self.x + self.width + margin, self.y + self.height + margin)
-        cv2.rectangle(image, coordToInt(tlCorner), coordToInt(brCorner), color, thickness)
+    def draw_frame(self, image, margin, color=(0, 0, 0), thickness=1):
+        top_left_corner = coord_to_int((self.x - margin, self.y - margin))
+        bot_right_corner = coord_to_int((self.x + self.width + margin, self.y + self.height + margin))
+        cv2.rectangle(image, top_left_corner, bot_right_corner, color, thickness)
 
 
-    def draw_circle(self, image, color = (0, 0, 0), thickness = 1):
-        center = (self.x + self.width / 2, self.y + self.height / 2)
-        cv2.circle(image, coordToInt(center), int((self.width + self.height) / 4), color, thickness)
+    def draw_circle(self, image, color=(0, 0, 0), thickness=1):
+        center = (self.x + self.width/2, self.y + self.height/2)
+        cv2.circle(image, coord_to_int(center), int((self.width+self.height) / 4), color, thickness)
 
 
-    def displayId(self, image, color = (0, 0, 0), thickness = 1):
-        center = (self.x + self.width / 2, self.y + self.height / 2)
-        cv2.putText(image, str(self.id), coordToInt(center), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, thickness)
+    def display_id(self, image, color = (0, 0, 0), thickness = 1):
+        center = (self.x + self.width/2, self.y + self.height/2)
+        cv2.putText(image, str(self.id), coord_to_int(center), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, thickness)
 
 
 class BrailleChar:
@@ -39,34 +42,33 @@ class BrailleChar:
         self.height = height
 
 
-def areCloseEnough(point1, point2):
-    xCoef = 2
-    yCoef = 2
-    xDistance = abs(point1.x - point2.x)
-    yDistance = abs(point1.y - point2.y)
-    return (xDistance <= point1.width * xCoef and yDistance <= point1.height * yCoef)
+def are_close_enough(point1, point2):
+    x_distance = abs(point1.x - point2.x)
+    y_distance = abs(point1.y - point2.y)
+    return (x_distance <= point1.width * X_DISTANCE_COEF
+            and y_distance <= point1.height * Y_DISTANCE_COEF)
 
 
-def coordToInt(coord):
+def coord_to_int(coord):
     return(int(coord[0]), int(coord[1]))
 
 
-def findPoint(pointGroup, points, image):
-    parentPoint = pointGroup[-1]
-    parentPointCenter = (parentPoint.x + parentPoint.width / 2,
-                         parentPoint.y + parentPoint.height / 2)
+def findPoint(point_group, points, image):
+    parent_point = point_group[-1]
+    parent_point_center = (parent_point.x + parent_point.width/2,
+                         parent_point.y + parent_point.height/2)
     for point in points:
-        if not point.haveAGroup:
-            pointCenter = (point.x + point.width / 2, point.y + point.height / 2)
-            if areCloseEnough(parentPoint, point):
-                point.haveAGroup = True
-                pointGroup.append(point)
-                if len(pointGroup) < 5 :
-                    findPoint(pointGroup, points, image)
-                    cv2.line(image, ((int)(parentPointCenter[0]),
-                                     (int)(parentPointCenter[1])),
-                                    ((int)(pointCenter[0]),
-                                     (int)(pointCenter[1])),
+        if not point.have_group:
+            point_center = (point.x + point.width/2, point.y + point.height/2)
+            if are_close_enough(parent_point, point):
+                point.have_group = True
+                point_group.append(point)
+                if len(point_group) < 5 :
+                    findPoint(point_group, points, image)
+                    cv2.line(image, ((int)(parent_point_center[0]),
+                                     (int)(parent_point_center[1])),
+                                    ((int)(point_center[0]),
+                                     (int)(point_center[1])),
                                      (0, 0, 0), 1)
 
 
@@ -77,20 +79,21 @@ def points_shape(points):
     return points_height, points_width
                 
 
-def findPointBox(pointGroup, image):
-    xmin = pointGroup[0].x
-    ymin = pointGroup[0].y
-    xmax = xmin
-    ymax = ymin
+def find_point_box(point_group, image):
+    x_min = point_group[0].x
+    y_min = point_group[0].y
+    x_max = x_min
+    y_max = y_min
 
-    for point in pointGroup:
-        ymax = max(ymax, point.y + point.height)
-        ymin = min(ymin, point.y)
-        xmax = max(xmax, point.x + point.width)
-        xmin = min(xmin, point.x)
+    for point in point_group:
+        y_max = max(y_max, point.y + point.height)
+        y_min = min(y_min, point.y)
+        x_max = max(x_max, point.x + point.width)
+        x_min = min(x_min, point.x)
     
-    cv2.rectangle(image, coordToInt((xmin, ymin)), coordToInt((xmax, ymax)), (0, 0, 0), 2)
-    return(xmin, ymin, xmax - xmin, ymax - ymin)
+    cv2.rectangle(image, coord_to_int((x_min, y_min)),
+                  coord_to_int((x_max, y_max)), (0, 0, 0), 2)
+    return(x_min, y_min, x_max - x_min, y_max - y_min)
 
 
 def default_size(braille_char):
@@ -108,7 +111,8 @@ def resize_braille_chars(braille_chars, best_w, best_h, image):
         if braille_char.height < default_h:
             tlc = (braille_char.x, braille_char.y)
             brc = (tlc[0] + braille_char.width, tlc[1] + braille_char.height)
-            cv2.rectangle(image, coordToInt(tlc), coordToInt(brc), (0, 0, 0), 2)
+            cv2.rectangle(image, coord_to_int(tlc),
+                          coord_to_int(brc), (0, 0, 0), 2)
 
         if braille_char.width < default_w:
             braille_char.width = best_w if best_w != 0 else default_w
@@ -137,7 +141,7 @@ def get_best_sizes(braille_chars, image):
 def create_braille_chars(point_groups, image):
     braille_chars = []
     for i in range(len(point_groups)):
-        x, y, width, height = findPointBox(point_groups[i], image)
+        x, y, width, height = find_point_box(point_groups[i], image)
         braille_char = BrailleChar(i, point_groups[i], x, y, width, height)
         braille_chars.append(braille_char)
     return braille_chars
@@ -152,23 +156,23 @@ def zoom(image, zoom):
 
 
 def find_point_groups(points, image):
-    pointGroups = []
-    allPointsHaveGroup = False
-    while not allPointsHaveGroup:
-        pointIndex = 0
-        while pointIndex < len(points) and points[pointIndex].haveAGroup:
-            pointIndex += 1
-        if pointIndex < len(points) and not points[pointIndex].haveAGroup:
-            mainPoint = points[pointIndex]  # point sans groupe
-            points[pointIndex].haveAGroup = True # indique que ce point d'est plus disponible (on va lui trouver son groupe)
-            pointGroup = [mainPoint]
+    point_groups = []
+    all_points_have_group = False
+    while not all_points_have_group:
+        point_index = 0
+        while point_index < len(points) and points[point_index].have_group:
+            point_index += 1
+        if point_index < len(points) and not points[point_index].have_group:
+            mainPoint = points[point_index]  # point sans groupe
+            points[point_index].have_group = True # indique que ce point d'est plus disponible (on va lui trouver son groupe)
+            point_group = [mainPoint]
 
-            findPoint(pointGroup, points, image)
-            pointGroups.append(pointGroup)
+            findPoint(point_group, points, image)
+            point_groups.append(point_group)
         else:
-            allPointsHaveGroup = True
+            all_points_have_group = True
 
-    return pointGroups
+    return point_groups
 
 
 def mean(values):
@@ -201,13 +205,13 @@ def y_asc_sort(braille_chars):
                 braille_chars[j + 1] = temp_braille_char
 
 def intersect(braille_char_1, braille_char_2):
-    xDistance = abs(braille_char_1.x - braille_char_2.x)
-    yDistance = abs(braille_char_1.y - braille_char_2.y)
+    x_distance = abs(braille_char_1.x - braille_char_2.x)
+    y_distance = abs(braille_char_1.y - braille_char_2.y)
     
     mean_w = mean((braille_char_1.width, braille_char_2.width))
     mean_h = mean((braille_char_1.height, braille_char_2.height))
 
-    return (xDistance < mean_w and yDistance < mean_h)
+    return (x_distance < mean_w and y_distance < mean_h)
 
 
 def remove_overlapping_boxes(braille_chars, image):
@@ -239,14 +243,14 @@ def display_boxes(image, braille_chars):
     for braille_char in braille_chars:
         tlc = (braille_char.x, braille_char.y)
         brc = (tlc[0] + braille_char.width, tlc[1] + braille_char.height)
-        cv2.rectangle(image, coordToInt(tlc), coordToInt(brc), (5, 5, 5), 2)
+        cv2.rectangle(image, coord_to_int(tlc),
+                      coord_to_int(brc), (5, 5, 5), 2)
 
 
 def translate(image, points):
-
-    pointGroups = find_point_groups(points, image)
+    point_groups = find_point_groups(points, image)
     
-    braille_chars = create_braille_chars(pointGroups, image)
+    braille_chars = create_braille_chars(point_groups, image)
     best_w, best_h = get_best_sizes(braille_chars, image)
     resize_braille_chars(braille_chars, best_w, best_h, image)
 

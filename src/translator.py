@@ -1,5 +1,6 @@
-import brailleTable
-import cv2
+from . import brailleTable
+
+
 def translate2(image):
 
     i = 1

@@ -1,6 +1,7 @@
 import cv2
-import translator
 from math import *
+from .utils import *
+from . import roiFinderV3debug
 
 LOSS = 0.8
 XP = 3 * LOSS
@@ -40,6 +41,7 @@ class BrailleChar:
         self.y = y
         self.width = width
         self.height = height
+        self.translation = ""
 
 
 def are_close_enough(point1, point2):
@@ -47,10 +49,6 @@ def are_close_enough(point1, point2):
     y_distance = abs(point1.y - point2.y)
     return (x_distance <= point1.width * X_DISTANCE_COEF
             and y_distance <= point1.height * Y_DISTANCE_COEF)
-
-
-def coord_to_int(coord):
-    return(int(coord[0]), int(coord[1]))
 
 
 def findPoint(point_group, points, image):
@@ -91,8 +89,9 @@ def find_point_box(point_group, image):
         x_max = max(x_max, point.x + point.width)
         x_min = min(x_min, point.x)
     
-    cv2.rectangle(image, coord_to_int((x_min, y_min)),
-                  coord_to_int((x_max, y_max)), (0, 0, 0), 2)
+    # cv2.rectangle(image, coord_to_int((x_min, y_min)),
+    #               coord_to_int((x_max, y_max)), (0, 0, 0), 2)
+
     return(x_min, y_min, x_max - x_min, y_max - y_min)
 
 
@@ -247,14 +246,18 @@ def display_boxes(image, braille_chars):
                       coord_to_int(brc), (5, 5, 5), 2)
 
 
-def translate(image, points):
-    point_groups = find_point_groups(points, image)
+def get_braille_chars(image, result, thresholded_image):
+    points = roiFinderV3debug.get_points(
+                                        image,
+                                        thresholded_image)
+    point_groups = find_point_groups(points, result)
     
-    braille_chars = create_braille_chars(point_groups, image)
-    best_w, best_h = get_best_sizes(braille_chars, image)
-    resize_braille_chars(braille_chars, best_w, best_h, image)
+    braille_chars = create_braille_chars(point_groups, result)
+    best_w, best_h = get_best_sizes(braille_chars, result)
+    resize_braille_chars(braille_chars, best_w, best_h, result)
 
-    # display_boxes(image, braille_chars)
-    new_braille_chars = remove_overlapping_boxes(braille_chars, image)
+    # display_boxes(result, braille_chars)
+    braille_chars = remove_overlapping_boxes(braille_chars, result)
+    roiFinderV3debug.translate_braille_chars(thresholded_image, braille_chars)
 
-    return new_braille_chars
+    return braille_chars

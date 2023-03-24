@@ -1,7 +1,7 @@
 import cv2
-import src.roiFinderV3 as roiFinder
+import src.roiFinderV3debug as roiFinderDebug
 import time
-import src.brailleReaderV3  as brailleReader
+import src.brailleReaderV3debug  as brailleReader
 
 
 def display_fps(image, start_time):
@@ -10,8 +10,8 @@ def display_fps(image, start_time):
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100, 100, 100), 2)
 
 
-threshold_value = roiFinder.DEFAULT_THRESHOLD
-size_threshold = roiFinder.size_threshold
+threshold_value = roiFinderDebug.DEFAULT_THRESHOLD
+size_threshold = roiFinderDebug.size_threshold
 
 cap = cv2.VideoCapture(0)
 while True:
@@ -20,16 +20,16 @@ while True:
     if not ret:
         continue
     result_image = video_image.copy()
-    thresholded_image = roiFinder.threshold_image(
-                                                video_image,
-                                                threshold_value)
+    thresholded_image = roiFinderDebug.threshold_image(
+                                                        video_image,
+                                                        threshold_value)
 
     braille_chars = brailleReader.get_braille_chars(
                                                 video_image,
                                                 result_image,
                                                 thresholded_image)
 
-    roiFinder.display_translations(result_image, braille_chars)
+    roiFinderDebug.display_translations(result_image, braille_chars)
     
 
     display_fps(result_image, start_time)

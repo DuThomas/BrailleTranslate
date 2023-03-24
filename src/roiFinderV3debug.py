@@ -1,9 +1,11 @@
 import cv2
 from math import *
-import translator
-import brailleReaderV6debug  as brailleReader
-from src.utils import *
+from . import translator
+from . import brailleReaderV3debug  as brailleReader
+from .utils import *
 
+size_threshold = 120
+DEFAULT_THRESHOLD = 115
 
 def is_square(point):
     gap = 20 # in %
@@ -132,7 +134,7 @@ def find_valid_points(points, image):
     return best_points
 
 
-def remove_big_points(points):
+def remove_big_points(points, thresholded_image):
     avg_area = calc_avg_area(points)
     while calc_area_variance(points, avg_area) > 1000:
         if (abs(calc_area(points[-1]) - avg_area)
@@ -154,102 +156,78 @@ def display_points_id(image, points):
 # converting image into grayscale image
 
 
-cap = cv2.VideoCapture(0)
-image0 = cv2.imread('./res/videoImage.png')
-
-# converting image into grayscale image
-gray0 = cv2.cvtColor(image0, cv2.COLOR_BGR2GRAY)
-
-size_threshold = 120
-mythreshold_id = 115
-
-while True:
-    ret, image = cap.read()
-    # image = cv2.imread('./res/videoImage.png')
-    if not ret:
-        continue
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    #gray = gray0.copy()
-    #image = image0.copy()
+def get_braille_char_img(image, braille_char):
+    top_left_corner = brailleReader.coord_to_int((braille_char.x, braille_char.y))
+    bot_right_corner = brailleReader.coord_to_int((braille_char.x + braille_char.width,
+                                                   braille_char.y + braille_char.height))
     
-    _, thresholded_image = cv2.threshold(gray, mythreshold_id, 255,
-                                         cv2.THRESH_BINARY)
+    braille_char_img = image[top_left_corner[1]:bot_right_corner[1],
+                             top_left_corner[0]:bot_right_corner[0]]
+    
+    return braille_char_img
 
-    # using a findContours() functioncircle
+
+def threshold_image(image, threshold_value):
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    _, thresholded_image = cv2.threshold(gray, threshold_value, 255,
+                                         cv2.THRESH_BINARY)
+    
+    return thresholded_image
+
+
+def translate_braille_chars(thresholded_image, braille_chars):
+    for braille_char in braille_chars:
+        braille_char_img = get_braille_char_img(thresholded_image, braille_char)
+        # braille_char_img = threshold_image(image, threshold_value)
+        braille_char.translation = translator.translate(braille_char_img)
+
+
+def display_translations(image, braille_chars):
+    for braille_char in braille_chars:
+        top_left_corner = brailleReader.coord_to_int((braille_char.x, braille_char.y))
+        bot_right_corner = brailleReader.coord_to_int((braille_char.x + braille_char.width,
+                                                        braille_char.y + braille_char.height))
+        cv2.putText(image, braille_char.translation, bot_right_corner,
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100, 100, 100), 2)
+        cv2.rectangle(image, top_left_corner,
+                        bot_right_corner, [0, 0, 255])
+
+
+def display_roi(image, points, threshold_value):
+    points_box = get_point_box(points)
+    points_box = add_margin(points_box, 15, image)
+
+    roi = image.copy()
+    roi = roi[points_box[1]:points_box[3], points_box[0]:points_box[2]]
+    cv2.imshow("ROI", roi)
+
+    thresholded_roi = threshold_image(roi, threshold_value)
+    cv2.imshow("Thresholded ROI", thresholded_roi)
+
+
+def get_potential_points(thresholded_image):
     contours, _ = cv2.findContours(
         thresholded_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     
-    points = list(brailleReader.Point(contour) for contour in contours)
+    return list(brailleReader.Point(contour) for contour in contours)
+
+
+def get_points(image, thresholded_image):
+    points = get_potential_points(thresholded_image)
+
     best_points = []
-
-    if len(points) > 1: 
+    if points: 
         best_points = find_valid_points(points, thresholded_image)
-
-    area_asc_sort(best_points)
-
-    if len(best_points) > 1:
-        remove_big_points(best_points)
-
-        points_box = get_point_box(best_points)
-        # print("->", points_box, image.shape, (points_box[2] - points_box[0], points_box[3] - points_box[1]))
-        points_box = add_margin(points_box, 15, image)
-
-        roi = image.copy()
-        roi = roi[points_box[1]:points_box[3], points_box[0]:points_box[2]]
-        # print(points_box, image.shape, (points_box[2] - points_box[0], points_box[3] - points_box[1]))
-        cv2.imshow("ROI", roi) 
         
-        braille_chars = brailleReader.translate(image, best_points)
-        for braille_char in braille_chars:
-            brailleReader.display_boxes(image, braille_chars)
+    if best_points:
+        area_asc_sort(best_points)
+        remove_big_points(best_points, thresholded_image)
 
+        # display_roi(image, best_points)
 
-        gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-        # setting threshold of gray image
-        _, threshold = cv2.threshold(gray, mythreshold_id, 255, cv2.THRESH_BINARY)
-        
-        cv2.imshow("Thresholded ROI", threshold)
-
-        for i in range(len(braille_chars)):
-            top_left_corner2 = coordToInt((braille_chars[i].x, braille_chars[i].y))
-            bot_right_corner2 = (top_left_corner2[0] + int(braille_chars[i].width),
-                         top_left_corner2[1] + int(braille_chars[i].height))
-            
-            top_left_corner = (top_left_corner2[0] - points_box[0]
-                               , top_left_corner2[1] - points_box[1])
-            bot_right_corner = (top_left_corner[0] + int(braille_chars[i].width),
-                        top_left_corner[1] + int(braille_chars[i].height))
-            
-            braille_char = threshold[top_left_corner[1]:bot_right_corner[1],
-                                     top_left_corner[0]:bot_right_corner[0]]
-
-            traslation = translator.translate(braille_char)
-            cv2.putText(image, traslation, bot_right_corner2, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100, 100, 100), 2)
-            cv2.rectangle(image, top_left_corner2, bot_right_corner2, [0, 0, 255])
-
-
-        cv2.imshow("Result", image)
-
-        # draw_points_box(image, points_box)
         display_points_id(image, best_points)
-            # print(i, " : ", calc_area(best_points[i]), avg_area)
-    
-    cv2.imshow("Image", image)
+
     cv2.imshow("Threshlolded", thresholded_image)
 
-    key = cv2.waitKey(100)
-    if key == ord('q'):
-        break
-    elif key == ord('t'):
-        if mythreshold_id > 0:
-            mythreshold_id -= 1
-    elif key == ord('y'):
-        mythreshold_id += 1
-    elif key == ord('g'):
-        if size_threshold > 0:
-            size_threshold -= 1
-    elif key == ord('h'):
-        size_threshold += 1
-    if key != -1:
-        print("Size Threshold (g/h): ", size_threshold)
-        print("Threshold (t/y) : ", mythreshold_id)
+    return best_points
+

@@ -8,12 +8,12 @@ class Point:
         self.haveAGroup = False
         self.id = None
     
-    def frame(self, image, margin, color = (0, 0, 0), thickness = 1):
+    def draw_frame(self, image, margin, color = (0, 0, 0), thickness = 1):
         tlCorner = (self.x - margin, self.y - margin)
         brCorner = (self.x + self.width + margin, self.y + self.height + margin)
         cv2.rectangle(image, coordToInt(tlCorner), coordToInt(brCorner), color, thickness)
 
-    def circle(self, image, color = (0, 0, 0), thickness = 1):
+    def draw_circle(self, image, color = (0, 0, 0), thickness = 1):
         center = (self.x + self.width / 2, self.y + self.height / 2)
         cv2.circle(image, coordToInt(center), int((self.width + self.height) / 4), color, thickness)
 
@@ -46,8 +46,8 @@ def findPoint(pointGroup, points, image, roiTLC):
                 
 def findPointBox(pointGroup, widths, heights, image, roiTLC):
     pointCenter = (pointGroup[0].x + pointGroup[0].width / 2, pointGroup[0].y + pointGroup[0].height / 2)
-    xmin = pointCenter[0] - 1
-    ymin = pointCenter[1] - 1
+    xmin = pointCenter[0]
+    ymin = pointCenter[1]
     xmax = 0
     ymax = 0
 
@@ -55,24 +55,24 @@ def findPointBox(pointGroup, widths, heights, image, roiTLC):
         pointCenter = (point.x + point.width / 2, point.y + point.height / 2)
         if(pointCenter[1] > ymax):                
             ymax = pointCenter[1]
-        if(pointCenter[1] < ymin):               
-            ymin = pointCenter[1]
-        if(pointCenter[0] > xmax):               
-            xmax = pointCenter[0]
-        if(pointCenter[0] < xmin):              
-            xmin = pointCenter[0]
+        ymax = max(ymax, pointCenter[1])
+        ymin = min(ymin, pointCenter[1])
+        xmax = max(xmax, pointCenter[0])
+        xmin = min(xmin, pointCenter[0])
             
     xp = 1.75
     yp = 3.2
 
     margin = max([pointGroup[0].width, pointGroup[0].height]) / 2
+    margin = 0
     cv2.rectangle(image, coordToInt((xmin - margin, ymin - margin)), coordToInt((xmax + margin, ymax + margin)), (0, 0, 0), 1)
+
     if xmax - xmin < xp * pointGroup[0].width:
         xmax = xmin + xp * pointGroup[0].width
     if ymax - ymin < yp * pointGroup[0].height:
         ymax = ymin + yp * pointGroup[0].height
         
-    boxW = xmax - xmin
+    boxW = xmax - xmin # character box =! points box (character box >= points box)
     boxH = ymax - ymin
     
     widths.append(boxW)

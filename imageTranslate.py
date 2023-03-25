@@ -1,47 +1,45 @@
 import cv2
 import src.roiFinderV3 as roiFinder
-import time
 import src.brailleReaderV3  as brailleReader
 import sys
-
-def display_fps(image, start_time):
-    fps = 1 / (time.time()-start_time)
-    cv2.putText(image, "fps : " + str(int(fps)), (5, 20),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100, 100, 100), 2)
-
 
 threshold_value = roiFinder.DEFAULT_THRESHOLD
 size_threshold = roiFinder.size_threshold
 
-cap = cv2.VideoCapture(0)
+
+if len(sys.argv) == 1:
+    print("Please precise path of image")
+    exit(1)
+
+image_path = sys.argv[1]
+img = cv2.imread(image_path)
 while True:
-    start_time = time.time()
-    ret, video_image = cap.read()
-    if not ret:
-        print("Cannot read camera")
-        continue
-    result_image = video_image.copy()
+    if img.size == 0:
+        print("Cannot open ", image_path)
+        exit(1)
+    
+    image = img.copy()
+    result_image = image.copy()
     thresholded_image = roiFinder.threshold_image(
-                                                video_image,
+                                                image,
                                                 threshold_value)
 
     braille_chars = brailleReader.get_braille_chars(
-                                                video_image,
+                                                image,
                                                 result_image,
                                                 thresholded_image)
 
     roiFinder.display_translations(result_image, braille_chars)
     
 
-    display_fps(result_image, start_time)
     cv2.putText(result_image, "threshold : " + str(int(threshold_value))
                 , (5, 40), cv2.FONT_HERSHEY_SIMPLEX
                 , 0.6, (100, 100, 100), 2)
     
-    cv2.imshow("Input", video_image)
+    cv2.imshow("Input", image)
     cv2.imshow("Result", result_image)
 
-    key = cv2.waitKey(100)
+    key = cv2.waitKey(0)
     if key == ord('q'):
         break
     elif key == ord('t'):

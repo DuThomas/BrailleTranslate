@@ -2,15 +2,17 @@ import cv2
 import numpy as np
 import brailleTable
 
-DOT_SIZE = 12
-
+DOT_SIZE = 6
 def writeBrailleText(image, tlcorner, color):
     col = 0
     row = 0
     while(True):
         cv2.imshow('brailleWriter', image)
         key = cv2.waitKey(0)
+<<<<<<< HEAD
         print(key)
+=======
+>>>>>>> test
         if(ord('a') <= key <= ord('z') or key == 32):
             writeBrailleChar(image, (tlcorner[0] + row * DOT_SIZE, tlcorner[1] + col * DOT_SIZE), chr(key), color)
             col += 5
@@ -27,12 +29,12 @@ def writeBrailleChar(img, tlcorner, char, color):
         if (val == char):
             m = cle
     x = 0
-    y = 0
+    y = 0  
     for i in range(len(m)):
         if(m[i] == '1'):
-            drawDot(img, (tlcorner[0] + (i%3 * 2 + 1) * DOT_SIZE, tlcorner[1] + (i//3 * 2 + 1) * DOT_SIZE), color)
+            drawSquareDot(img, (tlcorner[0] + (i%3 * 2 + 1) * DOT_SIZE, tlcorner[1] + (i//3 * 2 + 1) * DOT_SIZE), color)
 
-def drawSqareDot(img, tlCorner, color):
+def drawSquareDot(img, tlCorner, color):
     img[tlCorner[0]:tlCorner[0] + DOT_SIZE , tlCorner[1]:tlCorner[1] + DOT_SIZE] = color
 
 def drawDot(img, tlCorner, color):

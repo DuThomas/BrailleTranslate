@@ -2,21 +2,17 @@ import cv2
 import numpy as np
 import translator
 
+cap = cv2.VideoCapture(0)
+
 mythreshold = 189
 erode = 0
 dilate = 0
 while True:
-<<<<<<< HEAD
-    img = cv2.imread('./res/Test.png')
-    # img = cv2.imread('./res/brailleTextePhoto.png')
+    #img = cv2.imread('./res/Test.png')
 
-    scale_percent = 800 # percent of original size
-=======
-    # img = cv2.imread('./res/Test.png')
-    img = cv2.imread('./res/videoImage.png')
+    ret, img = cap.read()
 
     scale_percent = 100 # percent of original size
->>>>>>> test
     width = int(img.shape[1] * scale_percent / 100)
     height = int(img.shape[0] * scale_percent / 100)
     dim = (width, height)
@@ -50,7 +46,7 @@ while True:
     cv2.imshow('Gray', threshold)
     cv2.imshow('OutPut', outPut)
 
-    key = cv2.waitKey(0)
+    key = cv2.waitKey(1)
     if key == ord('q'):
         break
     elif key == ord('t'):
@@ -69,7 +65,8 @@ while True:
     elif key == ord('b'):
         dilate += 1
     elif key == ord('s'):
-        cv2.imwrite("./res/processedImage.png", outPut)
+        cv2.imwrite("./res/videoImageGray.png", gray)
+        cv2.imwrite("./res/videoImage.png", img)
 
     print("threshold : ", mythreshold)
     print("erode : ", erode)

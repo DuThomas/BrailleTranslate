@@ -9,10 +9,7 @@ def writeBrailleText(image, tlcorner, color):
     while(True):
         cv2.imshow('brailleWriter', image)
         key = cv2.waitKey(0)
-<<<<<<< HEAD
         print(key)
-=======
->>>>>>> test
         if(ord('a') <= key <= ord('z') or key == 32):
             writeBrailleChar(image, (tlcorner[0] + row * DOT_SIZE, tlcorner[1] + col * DOT_SIZE), chr(key), color)
             col += 5

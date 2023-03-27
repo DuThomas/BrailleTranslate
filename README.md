@@ -39,29 +39,48 @@ Ce projet est la continuation du projet [`BrailleTranslate2022`](./BrailleTransl
 
     Ici nous ne pouvons plus procéder comme dans la version précédante : il faut différencier les éléments qui nous intéressent des éléments du décor.
 
-    Pour mieux voir ce qu'il se passe, utilisons la fonction *findContour()* et dessinons un rectangle autours des éléments trouvés :
+    Pour mieux voir ce qu'il se passe, utilisons la fonction *findContour()* et dessinons un rectangle autour des éléments trouvés :
 
     ![thresholded_with_box](res/readmeImg/thresholded_with_box.png)
 
-    Nous pouvons remarquer que les points qui nous intérressent ont étés détectés (ce qui n'est pas toujours le cas), mais que beaucoup d'autres éléments sont aussi présents.
+    Nous pouvons remarquer que les points qui nous intérressent ont tous étés détectés (ce qui n'est pas toujours le cas), mais que beaucoup d'autres éléments sont aussi présents.
 
-    Pour garder les points qui nous intéressent, nous appliquer plusieurs filtres.
+    Pour garder les points qui nous intéressent, nous allons appliquer plusieurs filtres.
 
-    2.1 Filtre 1:
+    2.1 Filtre 1 :
 
-    - Assez grand :
+    - 2.1.1 Assez grand :
 
         Un point doit avoir une largeur et une longueur supérieur à **7 pixels**
-    - Pas trop grand :
+    - 2.1.2 Pas trop grand :
 
         Un point doit avoir une **largeur inférieur à 1/3 de la largeur de l'image**, et une **longueur inférieur à 1/5 de la largeur de l'image**.
-    - "Un peu près" carré :
+    - 2.1.3 "Un peu près" carré :
 
         Un point doit avoir une **largeur égale à plus ou moins 25% de sa longueur**
 
     Résultat après filtre 1 :
 
     ![filter_1](res/readmeImg/filter1.png)
+
+    Ce filtre nous à permis de retirer la quasi-totalité des éléments qui ne nous intéressent, tout en conservant ceux qui nous intérressent !
+
+    Il reste encore un élément non désiré (au milieu à droite) à retirer.
+
+    2.2 Filtre 2 :
+
+    - 2.2.1 Se fondre dans la masse :
+
+        Un point doit avoir une aire un peu près égale à celle des autres points.
+
+        - Nous calculons l'aire moyenne avec les points ayant passé le premier filtre
+        - Les points sont retirés un à un, en commençant par ceux ayant leur aire la plus éloigné de l'aire moyenne, jusqu'à ce que la **variance** soit assez faible
+
+    Résultat après filtre 2 :
+
+    ![filter_1](res/readmeImg/filter2.png)
+
+    Les points nayant pas passé le deuxième filtre apparaissent avec un cercle en plus.
 
 ## Contributeurs
 

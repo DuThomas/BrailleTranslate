@@ -66,7 +66,7 @@ Une image intitulée "brailleText.png" sera ensuite enregistrée dans le dossier
 Il est possible de modifier :
 
 - La taille des points
-- La forme des points (rond ou carré)
+- La formedes points (rond ou carré)
 - Les dimensions de l'image
 - Le point de départ d'écriture
 

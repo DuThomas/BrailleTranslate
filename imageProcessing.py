@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import translator
+from src import translator
 
 mythreshold = 189
 erode = 0

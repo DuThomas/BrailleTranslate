@@ -52,8 +52,6 @@ while True:
             size_threshold -= 1
     elif key == ord('h'):
         size_threshold += 1
-    elif key == ord('s'):
-        cv2.imwrite("./res/input_{}.png".format(threshold_value), thresholded_image)
     if key != -1:
         print("Size Threshold (g/h): ", size_threshold)
         

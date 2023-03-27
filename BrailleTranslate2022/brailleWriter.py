@@ -31,7 +31,7 @@ def writeBrailleChar(img, tlcorner, char, color):
         if(m[i] == '1'):
             drawSquareDot(img, (tlcorner[0] + (i%3 * 2 + 1) * DOT_SIZE, tlcorner[1] + (i//3 * 2 + 1) * DOT_SIZE), color)
 
-def drawSquareDot(img, tlCorner, color):
+def drawSquareDot(img, tlCorner, color): 
     img[tlCorner[0]:tlCorner[0] + DOT_SIZE , tlCorner[1]:tlCorner[1] + DOT_SIZE] = color
 
 def drawDot(img, tlCorner, color):
@@ -47,9 +47,9 @@ def newImage(width, height, bgColor):
 white = [255, 255, 255]
 black = [0, 0, 0]
 
-width = 400
+width = 600
 height = 500
-image = newImage(width, height, white)
+image = newImage(height, width, white)
 
 x = 50
 y = 20

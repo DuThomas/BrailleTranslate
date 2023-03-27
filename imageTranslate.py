@@ -1,6 +1,6 @@
 import cv2
-import src.roiFinderV3 as roiFinder
-import src.brailleReaderV3  as brailleReader
+import src.roiFinderV3debug as roiFinder
+import src.brailleReaderV3debug  as brailleReader
 import sys
 
 threshold_value = roiFinder.DEFAULT_THRESHOLD

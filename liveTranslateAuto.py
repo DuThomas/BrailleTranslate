@@ -34,42 +34,73 @@ while True:
         print("Cannot read camera")
         continue
 
-    split_value = 4
+    split_value = 3
+    min_value = 0
     max_value = 255
-    step_value = int(max_value / (split_value+1))
-    scores = []
-    result_images = []
-    thresholded_images = []
-    braille_chars_list = []
-    for i in range(split_value):
-        threshold_value = (i+1) * step_value
+    lower_value = min_value
+    upper_value = max_value
 
-        image = video_image.copy()
-        result_images.append(image.copy())
-        thresholded_images.append(roiFinder.threshold_image(
-                                                    image,
-                                                    threshold_value))
+    itera = 1
+    points_list = [[0], [], [2]]
+    points_lens = []
+    while not (len(points_list[0])
+               == len(points_list[1])
+               == len(points_list[2])):
+        print("iteration : ", itera)
+        print(lower_value, upper_value)
+        step_value = int((upper_value-lower_value) / (split_value+1))
+        # accuracies = []
+        # result_images = []
+        thresholded_images = []
+        # braille_chars_list = []
+        points_list = []
+        for i in range(split_value):
+            threshold_value = lower_value + (i+1)*step_value
+            print("th", threshold_value, end=' ')
 
-        braille_chars_list.append(brailleReader.get_braille_chars(
-                                                    image,
-                                                    result_images[i],
-                                                    thresholded_images[i]))
+            image = video_image.copy()
+            thresholded_images.append(roiFinder.threshold_image(
+                                                        image,
+                                                        threshold_value))
+            points_list.append(roiFinder.get_points(image, thresholded_images[i]))
         
-        scores.append(braille_chars_score(braille_chars_list[i]
-                                          , threshold_value))
+        new_points_lens = list(len(points) for points in points_list)
+        if new_points_lens != points_lens:
+            points_lens = new_points_lens.copy()
+        else:
+            break
+        print(points_lens)
+        itera += 1
+        if points_lens[0] >= points_lens[1] and points_lens[0] > points_lens[2]:
+            upper_value -= step_value
+        elif points_lens[2] >= points_lens[1] and points_lens[2] > points_lens[0]:
+            lower_value += step_value
+        else:
+            upper_value -= int(0.5 * step_value)
+            lower_value += int(0.5 * step_value)
+    
+    threshold_value -= step_value
+    print(threshold_value)
+    image = video_image.copy()
+    result_image = image.copy()
+    thresholded_image = roiFinder.threshold_image(
+                                                image,
+                                                threshold_value)
+    braille_chars = brailleReader.get_braille_chars(
+                                                image,
+                                                result_image,
+                                                thresholded_image)
 
-    i = scores.index(min(scores))
-    threshold_value = (i+1) * step_value
-    roiFinder.display_translations(result_images[i]
-                                   , braille_chars_list[i])
-    cv2.putText(result_images[i], "threshold : " + str(threshold_value)
+    roiFinder.display_translations(result_image
+                                   , braille_chars)
+    cv2.putText(result_image, "threshold : " + str(threshold_value)
                 , (5, 40), cv2.FONT_HERSHEY_SIMPLEX
                 , 0.6, (100, 100, 100), 2)
 
-    display_fps(result_images[i], start_time)
+    display_fps(result_image, start_time)
     
-    cv2.imshow("Input", thresholded_images[i])
-    cv2.imshow("Result", result_images[i])
+    cv2.imshow("Input", thresholded_image)
+    cv2.imshow("Result", result_image)
 
     key = cv2.waitKey(100)
     if key == ord('q'):

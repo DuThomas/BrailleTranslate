@@ -194,8 +194,10 @@ def display_translations(image, braille_chars):
         top_left_corner = brailleReader.coord_to_int((braille_char.x, braille_char.y))
         bot_right_corner = brailleReader.coord_to_int((braille_char.x + braille_char.width,
                                                         braille_char.y + braille_char.height))
-        cv2.putText(image, braille_char.translation, bot_right_corner,
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100, 100, 100), 2)
+        cv2.putText(image, braille_char.translation
+                    , coord_to_int((braille_char.x + braille_char.width/2
+                       , bot_right_corner[1] + 10)),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (50, 50, 50), 2)
         cv2.rectangle(image, top_left_corner,
                         bot_right_corner, [0, 0, 255])
 

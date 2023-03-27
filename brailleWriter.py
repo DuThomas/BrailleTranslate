@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import brailleTable
+from src import brailleTable
 
 DOT_SIZE = 6
 def writeBrailleText(image, tlcorner, color):

@@ -60,6 +60,7 @@ while True:
 
     itera = 1
     points_list = [[0], [], [2]]
+    points_lens = []
     while not (len(points_list[0])
                == len(points_list[1])
                == len(points_list[2])):
@@ -80,8 +81,14 @@ while True:
                                                         image,
                                                         threshold_value))
             points_list.append(roiFinder.get_points(image, thresholded_images[i]))
-        points_lens = list(len(points) for points in points_list)
+
+        new_points_lens = list(len(points) for points in points_list)
+        if new_points_lens != points_lens:
+            points_lens = new_points_lens.copy()
+        else:
+            break
         print(points_lens)
+
         itera += 1
         if points_lens[0] >= points_lens[1] and points_lens[0] > points_lens[2]:
             upper_value -= step_value
@@ -93,8 +100,6 @@ while True:
         else:
             print("error")
 
-    # i = accuracies.index(min(accuracies))
-    i = points_lens.index(max(points_lens))
     threshold_value -= step_value
     print(threshold_value)
     image = img.copy()

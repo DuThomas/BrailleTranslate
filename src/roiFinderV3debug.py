@@ -8,7 +8,7 @@ size_threshold = 120
 DEFAULT_THRESHOLD = 115
 
 def is_square(point):
-    gap = 20 # in %
+    gap = 25 # in %
 
     return (point.height * 100 / (100+gap)
             < point.width
@@ -21,7 +21,7 @@ def is_big_enough(point):
 
 
 def is_too_big(point, img_w, img_h):
-    return point.width * 3 > img_w  and point.height * 5 > img_h
+    return point.width * 3 > img_w  or point.height * 5 > img_h
 
 
 def has_avg_area(point, avg_area):
@@ -134,8 +134,9 @@ def find_valid_points(points, image):
             point.id = count
             best_points.append(point)
             point.draw_frame(image, 0, (200, 200, 200), 2)
-        else:
-            point.draw_frame(image, 0, (125, 125, 125), 1)
+        # else:
+        #     point.draw_frame(image, 0, (125, 125, 125), 1)
+            # point.draw_frame(image, 0, (200, 200, 200), 2)
         count += 1
 
     return best_points

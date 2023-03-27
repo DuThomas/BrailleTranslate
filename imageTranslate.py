@@ -1,6 +1,6 @@
 import cv2
-import src.roiFinderV3 as roiFinder
-import src.brailleReaderV3  as brailleReader
+import src.roiFinderV3debug as roiFinder
+import src.brailleReaderV3debug  as brailleReader
 import sys
 
 threshold_value = roiFinder.DEFAULT_THRESHOLD
@@ -22,6 +22,7 @@ while True:
     thresholded_image = roiFinder.threshold_image(
                                                 image,
                                                 threshold_value)
+    th = thresholded_image.copy()
 
     braille_chars = brailleReader.get_braille_chars(
                                                 image,
@@ -31,9 +32,9 @@ while True:
     roiFinder.display_translations(result_image, braille_chars)
     
 
-    # cv2.putText(result_image, "threshold : " + str(int(threshold_value))
-    #             , (5, 40), cv2.FONT_HERSHEY_SIMPLEX
-    #             , 0.6, (100, 100, 100), 2)
+    cv2.putText(result_image, "threshold : " + str(int(threshold_value))
+                , (5, 40), cv2.FONT_HERSHEY_SIMPLEX
+                , 0.6, (100, 100, 100), 2)
     
     cv2.imshow("Thresh", thresholded_image)
     cv2.imshow("Result", result_image)
@@ -52,7 +53,7 @@ while True:
     elif key == ord('h'):
         size_threshold += 1
     elif key == ord('s'):
-        cv2.imwrite("./res/result.png", result_image)
+        cv2.imwrite("./res/input_{}.png".format(threshold_value), thresholded_image)
     if key != -1:
         print("Size Threshold (g/h): ", size_threshold)
         

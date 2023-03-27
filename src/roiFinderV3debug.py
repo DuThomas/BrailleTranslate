@@ -20,6 +20,10 @@ def is_big_enough(point):
     return point.width > min_lenght and point.height > min_lenght
 
 
+def is_too_big(point, img_w, img_h):
+    return point.width * 3 > img_w  and point.height * 5 > img_h
+
+
 def has_avg_area(point, avg_area):
     areaGap = 25 # in %
     return (avg_area * (100-areaGap) / 100
@@ -120,10 +124,13 @@ def area_asc_sort(points):
 
 
 def find_valid_points(points, image):
+    h, w = image.shape
     count = 1
     best_points = []
     for point in points[1:]: # skip first point which is the entire frame
-        if is_square(point) and is_big_enough(point):
+        if (is_square(point)
+            and is_big_enough(point)
+            and not is_too_big(point, w, h)):
             point.id = count
             best_points.append(point)
             point.draw_frame(image, 0, (200, 200, 200), 2)
@@ -227,7 +234,7 @@ def get_points(image, thresholded_image):
 
         display_points_id(image, best_points)
 
-    cv2.imshow("Threshlolded", thresholded_image)
-
+    # cv2.imshow("Threshlolded", thresholded_image)
+    print("points : ", len(best_points))
     return best_points
 

@@ -40,7 +40,7 @@ def translate(image):
 
     h, w = image.shape
     character = []
-    minRate = 0.20 # 20 % d'une case doit etre noir pour etre consideree comme un point
+    minRate = 0.10 # 10 % d'une case doit etre noir pour etre consideree comme un point
     for col in range(2):
         i = int(col * w/2)
         for row in range(3):

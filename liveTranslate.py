@@ -1,8 +1,7 @@
 import cv2
-import src.roiFinderV3 as roiFinder
+import src.roiFinderV3debug as roiFinder
 import time
-import src.brailleReaderV3  as brailleReader
-import sys
+import src.brailleReaderV3debug  as brailleReader
 
 def display_fps(image, start_time):
     fps = 1 / (time.time()-start_time)
@@ -38,7 +37,7 @@ while True:
                 , (5, 40), cv2.FONT_HERSHEY_SIMPLEX
                 , 0.6, (100, 100, 100), 2)
     
-    cv2.imshow("Input", video_image)
+    cv2.imshow("Thresh", thresholded_image)
     cv2.imshow("Result", result_image)
 
     key = cv2.waitKey(100)

@@ -6,7 +6,6 @@ import sys
 threshold_value = roiFinder.DEFAULT_THRESHOLD
 size_threshold = roiFinder.size_threshold
 
-
 if len(sys.argv) == 1:
     print("Please precise path of image")
     exit(1)
@@ -36,7 +35,7 @@ while True:
                 , (5, 40), cv2.FONT_HERSHEY_SIMPLEX
                 , 0.6, (100, 100, 100), 2)
     
-    cv2.imshow("Input", image)
+    cv2.imshow("Thresh", thresholded_image)
     cv2.imshow("Result", result_image)
 
     key = cv2.waitKey(0)

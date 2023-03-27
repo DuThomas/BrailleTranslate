@@ -174,7 +174,7 @@ def display_translations(image, braille_chars):
         cv2.putText(image, braille_char.translation
                     , coord_to_int((braille_char.x + braille_char.width/2
                        , bot_right_corner[1] + 10)),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100, 100, 100), 2)
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (50, 50, 50), 2)
         cv2.rectangle(image, top_left_corner,
                         bot_right_corner, [0, 0, 255])
 
@@ -197,7 +197,7 @@ def get_points(image, thresholded_image):
         area_asc_sort(best_points)
         remove_big_points(best_points)
 
-    cv2.imshow("Threshlolded", thresholded_image)
+    # cv2.imshow("Threshlolded", thresholded_image)
 
     return best_points
 

@@ -103,7 +103,7 @@ Il ne reste plus qu'a regrouper les caractères qui se superposent, de la même 
 
 ![ready](res/readmeImg/ready.png)
 
-Les caractères sont enfin prêt à être traduit
+Les caractères sont enfin prêts à être traduit
 
 Résultat :
 

@@ -133,9 +133,9 @@ def find_valid_points(points, image):
             and not is_too_big(point, w, h)):
             point.id = count
             best_points.append(point)
-            # point.draw_frame(image, 0, (200, 200, 200), 2)
-        # else:
-        #     point.draw_frame(image, 0, (125, 125, 125), 1)
+            point.draw_frame(image, 0, (200, 200, 200), 2)
+        else:
+            point.draw_frame(image, 0, (125, 125, 125), 1)
             # point.draw_frame(image, 0, (200, 200, 200), 2)
         count += 1
 
@@ -151,7 +151,7 @@ def remove_big_points(points, thresholded_image):
         else:
             point_index = 0
 
-        # points[point_index].draw_circle(thresholded_image, (111, 111, 111), 2)
+        points[point_index].draw_circle(thresholded_image, (111, 111, 111), 2)
         del points[point_index]
 
         avg_area = calc_avg_area(points)

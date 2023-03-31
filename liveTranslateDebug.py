@@ -39,6 +39,7 @@ while True:
     
     cv2.imshow("Input", video_image)
     cv2.imshow("Result", result_image)
+    cv2.imshow("Thresholded", thresholded_image)
 
     key = cv2.waitKey(100)
     if key == ord('q'):

@@ -4,6 +4,13 @@ from .utils import *
 from . import roiFinderV3 as roiFinder
 
 LOSS = 0.8
+
+# XP = 2.5 * LOSS
+# YP = 4.5 * LOSS
+
+# X_DISTANCE_COEF = 1.5
+# Y_DISTANCE_COEF = 1.5
+
 XP = 3 * LOSS
 YP = 5 * LOSS
 
@@ -211,8 +218,8 @@ def display_boxes(image, braille_chars):
 
 def get_braille_chars(image, result, thresholded_image):
     points = roiFinder.get_points(
-                                        image,
-                                        thresholded_image)
+                                image,
+                                thresholded_image)
     point_groups = find_point_groups(points)
     
     braille_chars = create_braille_chars(point_groups)

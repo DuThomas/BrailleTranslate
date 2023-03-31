@@ -1,7 +1,7 @@
 import cv2
-import src.roiFinderV3debug as roiFinder
+import src.roiFinderV3 as roiFinder
 import time
-import src.brailleReaderV3debug  as brailleReader
+import src.brailleReaderV3 as brailleReader
 
 def display_fps(image, start_time):
     fps = 1 / (time.time()-start_time)

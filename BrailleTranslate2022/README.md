@@ -124,7 +124,7 @@ Cette deuxième version va permettre de gérer les photos de texte braille comme
 
   (Les points d'un même groupe ont étés reliés par un trait)
 
-  [`Problème 1`] : Pour les caractères tels que celui à la deuxième ligne, première colone (la lettre x), ils sont considérés comme deux groupes de points car les points du haut sont trop distants de ceux du bas.
+  `[Problème 1]` : Pour les caractères tels que celui à la deuxième ligne, première colone (la lettre x), ils sont considérés comme deux groupes de points car les points du haut sont trop distants de ceux du bas.
 
 - 2.2.3. Déterminer la zone de chaque caractère
 
@@ -142,9 +142,9 @@ Cette deuxième version va permettre de gérer les photos de texte braille comme
   
     ![photo de texte en braille](res/readmeImg/pointGroupBox.png)
 
-    [`Problème 2`] : La taille des zones ne s'adapte pas pour chaque groupe, la zone est trop grande pour les caractère de la première ligne. Cependant cela de posera pas de problème pour la suite.
+    `[Problème 2]` : La taille des zones ne s'adapte pas pour chaque groupe, la zone est trop grande pour les caractère de la première ligne. Cependant cela de posera pas de problème pour la suite.
 
-Pour régler le [`Problème 1`], il suffit de regrouper les zones qui se superposent
+Pour régler le `[Problème 1]`, il suffit de regrouper les zones qui se superposent
 
 Voici le résultat :
 

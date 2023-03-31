@@ -4,6 +4,13 @@ from .utils import *
 from . import roiFinderV3debug
 
 LOSS = 0.8
+
+# XP = 2.5 * LOSS
+# YP = 4.5 * LOSS
+
+# X_DISTANCE_COEF = 1.5
+# Y_DISTANCE_COEF = 1.5
+
 XP = 3 * LOSS
 YP = 5 * LOSS
 
@@ -107,8 +114,8 @@ def resize_braille_chars(braille_chars, best_w, best_h, image):
     for braille_char in braille_chars:
         default_w, default_h = default_size(braille_char)
 
-        # tlc = (braille_char.x, braille_char.y)
-        # brc = (tlc[0] + braille_char.width, tlc[1] + braille_char.height)
+        tlc = (braille_char.x, braille_char.y)
+        brc = (tlc[0] + braille_char.width, tlc[1] + braille_char.height)
 
         # if (braille_char.height >= default_h
         #     and braille_char.width >= default_w):
@@ -264,11 +271,10 @@ def get_braille_chars(image, result, thresholded_image):
     
     braille_chars = create_braille_chars(point_groups, result)
     best_w, best_h = get_best_sizes(braille_chars, result)
-    resize_braille_chars(braille_chars, best_w, best_h, result)
+    resize_braille_chars(braille_chars, best_w, best_h, thresholded_image)
 
     # display_boxes(result, braille_chars)
     braille_chars = remove_overlapping_boxes(braille_chars, result)
-    display_boxes(result, braille_chars)
     roiFinderV3debug.translate_braille_chars(thresholded_image, braille_chars)
-
+    # display_boxes(thresholded_image, braille_chars)
     return braille_chars

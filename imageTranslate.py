@@ -1,6 +1,6 @@
 import cv2
-import src.roiFinderV3debug as roiFinder
-import src.brailleReaderV3debug  as brailleReader
+import src.roiFinderV3 as roiFinder
+import src.brailleReaderV3 as brailleReader
 import sys
 
 threshold_value = roiFinder.DEFAULT_THRESHOLD
@@ -12,6 +12,8 @@ if len(sys.argv) == 1:
 
 image_path = sys.argv[1]
 img = cv2.imread(image_path)
+# img = brailleReader.zoom(img, 50)
+
 while True:
     if img.size == 0:
         print("Cannot open ", image_path)

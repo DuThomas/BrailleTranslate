@@ -46,6 +46,8 @@ if len(sys.argv) == 1:
 
 image_path = sys.argv[1]
 img = cv2.imread(image_path)
+# img = brailleReader.zoom(img, 50)
+
 while True:
     start_time = time.time()
     if img.size == 0:

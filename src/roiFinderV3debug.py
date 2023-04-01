@@ -1,11 +1,8 @@
 import cv2
-from math import *
 from . import translator
 from . import brailleReaderV3debug  as brailleReader
-from .utils import *
+from . import utils
 
-size_threshold = 120
-DEFAULT_THRESHOLD = 115
 
 def is_square(point):
     gap = 25 # in %
@@ -123,7 +120,7 @@ def area_asc_sort(points):
     return points
 
 
-def find_valid_points(points, image):
+def find_valid_points(points, image, debug):
     h, w = image.shape
     count = 1
     best_points = []
@@ -133,16 +130,17 @@ def find_valid_points(points, image):
             and not is_too_big(point, w, h)):
             point.id = count
             best_points.append(point)
-            point.draw_frame(image, 0, (200, 200, 200), 2)
+            if debug:
+                point.draw_frame(image, 0, (200, 200, 200), 2)
         else:
-            point.draw_frame(image, 0, (125, 125, 125), 1)
-            # point.draw_frame(image, 0, (200, 200, 200), 2)
+            if debug:
+                point.draw_frame(image, 0, (125, 125, 125), 1)
         count += 1
 
     return best_points
 
 
-def remove_big_points(points, thresholded_image):
+def remove_big_points(points, thresholded_image, debug):
     avg_area = calc_avg_area(points)
     while calc_area_variance(points, avg_area) > 1000:
         if (abs(calc_area(points[-1]) - avg_area)
@@ -150,8 +148,8 @@ def remove_big_points(points, thresholded_image):
             point_index = -1
         else:
             point_index = 0
-
-        points[point_index].draw_circle(thresholded_image, (111, 111, 111), 2)
+        if debug:
+            points[point_index].draw_circle(thresholded_image, (111, 111, 111), 2)
         del points[point_index]
 
         avg_area = calc_avg_area(points)
@@ -159,8 +157,8 @@ def remove_big_points(points, thresholded_image):
 
 def display_points_id(image, points):
     for i in range(len(points)):
-            points[i].id = i
-            points[i].display_id(image, (55, 55, 55), 2)
+        points[i].id = i
+        points[i].display_id(image, (55, 55, 55), 2)
 # converting image into grayscale image
 
 
@@ -196,7 +194,7 @@ def display_translations(image, braille_chars):
         bot_right_corner = brailleReader.coord_to_int((braille_char.x + braille_char.width,
                                                         braille_char.y + braille_char.height))
         cv2.putText(image, braille_char.translation
-                    , coord_to_int((braille_char.x + braille_char.width/2
+                    , utils.coord_to_int((braille_char.x + braille_char.width/2
                        , bot_right_corner[1] + 10)),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (50, 50, 50), 2)
         cv2.rectangle(image, top_left_corner,
@@ -222,20 +220,18 @@ def get_potential_points(thresholded_image):
     return list(brailleReader.Point(contour) for contour in contours)
 
 
-def get_points(image, thresholded_image):
+def get_points(thresholded_image, debug):
     points = get_potential_points(thresholded_image)
 
     best_points = []
     if points: 
-        best_points = find_valid_points(points, thresholded_image)
+        best_points = find_valid_points(points, thresholded_image, debug)
         
     if best_points:
         area_asc_sort(best_points)
-        remove_big_points(best_points, thresholded_image)
+        remove_big_points(best_points, thresholded_image, debug)
 
         # display_roi(image, best_points)
-
-        display_points_id(image, best_points)
 
     # cv2.imshow("Threshlolded", thresholded_image)
     print("points : ", len(best_points))

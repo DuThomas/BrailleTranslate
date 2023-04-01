@@ -1,12 +1,10 @@
-import cv2
-import src.roiFinderV3debug as roiFinder
-import src.brailleReaderV3debug  as brailleReader
-import sys
+import cv2, argparse, os
+from src import(brailleReaderV3debug,
+                roiFinderV3debug,
+                brailleConstants as brCst)
+import argparse
 import numpy as np
 import time
-
-threshold_value = roiFinder.DEFAULT_THRESHOLD
-size_threshold = roiFinder.size_threshold
 
 
 def braille_chars_accruracy(braille_chars, threshold_value):
@@ -40,20 +38,24 @@ def cat_images(image1, image2):
     return cat_image
 
 
-if len(sys.argv) == 1:
-    print("Please precise path of image")
-    exit(1)
+def is_image(image_path):
+    if not os.path.isfile(image_path):
+        raise argparse.ArgumentTypeError('Cannot open "{}"'.format(image_path))
+    elif image_path.split('.')[-1] not in ['jpg', 'JPG', 'png']:
+        raise argparse.ArgumentTypeError('"{}" file format is not accepted'.format(image_path))
+    return image_path
 
-image_path = sys.argv[1]
-img = cv2.imread(image_path)
+
+parser = argparse.ArgumentParser(usage="%(prog)s <image_path> -h for help")
+parser.add_argument('-d', '--debug', action='store_true')
+parser.add_argument('image_path', type=is_image)
+args = parser.parse_args()
+
+img = cv2.imread(args.image_path)
 # img = brailleReader.zoom(img, 50)
 
 while True:
     start_time = time.time()
-    if img.size == 0:
-        print("Cannot open ", image_path)
-        exit(1)
-    
     split_value = 3
     min_value = 0
     max_value = 255
@@ -79,10 +81,10 @@ while True:
             print("th", threshold_value, end=' ')
 
             image = img.copy()
-            thresholded_images.append(roiFinder.threshold_image(
+            thresholded_images.append(roiFinderV3debug.threshold_image(
                                                         image,
                                                         threshold_value))
-            points_list.append(roiFinder.get_points(image, thresholded_images[i]))
+            points_list.append(roiFinderV3debug.get_points(thresholded_images[i], args.debug))
 
         new_points_lens = list(len(points) for points in points_list)
         if new_points_lens != points_lens:
@@ -106,39 +108,23 @@ while True:
     print(threshold_value)
     image = img.copy()
     result_image = image.copy()
-    thresholded_image = roiFinder.threshold_image(
-                                                image,
-                                                threshold_value)
-    braille_chars = brailleReader.get_braille_chars(
-                                                image,
-                                                result_image,
-                                                thresholded_image)
-    # threshold_value = (i+1) * step_value
-    roiFinder.display_translations(result_image
-                                , braille_chars)
-    cv2.putText(result_image, "threshold : " + str(threshold_value)
-                , (5, 40), cv2.FONT_HERSHEY_SIMPLEX
-                , 0.6, (100, 100, 100), 2)
+
+    thresholded_image = roiFinderV3debug.threshold_image(image,
+                                                         threshold_value)
+    debug_img = thresholded_image.copy()
+    braille_chars = brailleReaderV3debug.get_braille_chars(image,
+                                                           debug_img,
+                                                           args.debug)
     
-    # cv2.imshow("Input" + str(i), thresholded_images[i])
-    # cv2.imshow("Input2" + str(i), result_images[i])
-    cv2.imshow("Result" + str(i), cat_images(result_image
-                                                , thresholded_image))
+    roiFinderV3debug.translate_braille_chars(thresholded_image, braille_chars)
+    roiFinderV3debug.display_translations(result_image, braille_chars)
+    cv2.putText(result_image, "threshold : " + str(threshold_value), (5, 40),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100, 100, 100), 2)
+
+    cv2.imshow("Result" + str(i), cat_images(result_image, debug_img))
 
     print(time.time()-start_time)
     key = cv2.waitKey(0)
     if key == ord('q'):
         break
-    elif key == ord('t'):
-        if threshold_value > 0:
-            threshold_value -= 1
-    elif key == ord('y') and threshold_value < 255:
-        threshold_value += 1
-    elif key == ord('g'):
-        if size_threshold > 0:
-            size_threshold -= 1
-    elif key == ord('h'):
-        size_threshold += 1
-    if key != -1:
-        print("Size Threshold (g/h): ", size_threshold)
         

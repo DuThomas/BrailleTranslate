@@ -1,6 +1,6 @@
 import cv2
 from . import translator
-from . import brailleReaderV3debug  as brailleReader
+from . import brailleReaderV3  as brailleReader
 from . import utils
 
 

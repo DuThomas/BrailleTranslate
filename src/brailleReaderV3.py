@@ -1,7 +1,7 @@
-import cv2
+import cv2, time, numpy as np
 from math import *
 from .utils import *
-from . import roiFinderV3debug
+from . import roiFinderV3
 from . import brailleConstants as brCst
 
 class Point:
@@ -256,10 +256,10 @@ def display_boxes(image, braille_chars):
 
 
 def get_braille_chars(input_img, debug_img, debug):
-    points = roiFinderV3debug.get_points(debug_img, debug)
+    points = roiFinderV3.get_points(debug_img, debug)
     
     if debug:
-        roiFinderV3debug.display_points_id(input_img, points)
+        roiFinderV3.display_points_id(input_img, points)
         
     point_groups = find_point_groups(points, debug_img, debug)
     
@@ -269,3 +269,83 @@ def get_braille_chars(input_img, debug_img, debug):
     braille_chars = remove_overlapping_boxes(braille_chars, debug_img)
     
     return braille_chars
+
+
+def get_points_nb(input_img, threshold_value):
+    thresholded_image = roiFinderV3.threshold_image(input_img,
+                                                    threshold_value)
+    points = roiFinderV3.get_points(thresholded_image,
+                                    False)
+    
+    return len(points)
+
+
+def comp_threshold_interval(pts_lens, l_val, u_val, step_val):
+    if (pts_lens[0] >= pts_lens[1] and pts_lens[0] > pts_lens[2]):
+        u_val -= step_val
+    elif (pts_lens[2] >= pts_lens[1] and pts_lens[2] > pts_lens[0]):
+        l_val += step_val
+    elif (pts_lens[1] > pts_lens[0] and pts_lens[1] > pts_lens[2]):
+        u_val -= int(0.5 * step_val)
+        l_val += int(0.5 * step_val)
+    else:
+        print("error", pts_lens)
+    return l_val, u_val
+
+def find_best_threshold(input_img, spilt_nb=3):
+    lower_value ,upper_value = 0, 255
+
+    itera = 1
+    points_lens = [0, 1, 1, 2]
+    while not (points_lens[0] == points_lens[1] == points_lens[2]):
+        print("iteration : ", itera, lower_value, upper_value)
+        step_value = int((upper_value-lower_value) / (spilt_nb+1))
+        new_points_lens = []
+        for i in range(spilt_nb):
+            threshold_value = lower_value + (i+1)*step_value
+            new_points_lens.append(get_points_nb(input_img.copy(),
+                                             threshold_value))
+
+        if new_points_lens != points_lens:
+            points_lens = new_points_lens.copy()
+        else:
+            print("Same number of points")
+            break
+        print(points_lens)
+        itera += 1
+        lower_value, upper_value = comp_threshold_interval(
+            points_lens, lower_value, upper_value, step_value)
+    threshold_value -= step_value
+
+    return threshold_value
+
+
+def braille_chars_accruracy(braille_chars, threshold_value):
+    print(threshold_value, end=' ')
+    unknown_count = 0
+    for braille_char in braille_chars:
+        if braille_char.translation in ['?',' ']:
+            unknown_count += 1
+    
+    if braille_chars:
+        accuracy = 1 - unknown_count/len(braille_chars)
+        print('{}/{} : {}'.format(unknown_count, len(braille_chars), 1 - unknown_count/len(braille_chars)))
+    else:
+        print("no points")
+        accuracy = 0
+
+    return accuracy
+
+
+def cat_images(image1, image2):
+    h1, w1, _ = image1.shape
+    h2, w2 = image2.shape
+    if h1 == h2:
+        cat_image = np.zeros((h1, w1 + w2, 3), np.uint8)
+        cat_image[:h1, :w1] = image1
+        for row in range(h1):
+            for col in range(w2):
+                val = image2[row][col]
+                cat_image[row][w1 + col] = [val, val, val]
+                
+    return cat_image

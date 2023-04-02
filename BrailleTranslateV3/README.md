@@ -27,9 +27,29 @@ Utilisez la commande suivante suivit du chemin d'accès de l'image sur laquelle 
 python .\imageTranslate.py <chemin/image.extension>
 ```
 
-Si votre texte n'est pas, ou mal traduit, utilisez les touches `'t'` et `'y'` pour ajuster la **valeur de seuillage**.
+Si votre texte n'est pas, ou est mal traduit, utilisez les touches `'t'` et `'y'` pour ajuster la **valeur de seuillage**.
 
 Enfin, la touche `'q'` permet de quitter le programme.
+
+Utiliser l'option `-a` permet ajuster automatiquement la valeur de seuillage (cette fonctionnalité est encore cours de développement et n'est pas toujours très efficace).
+
+```bash
+python .\imageTranslate.py <chemin/image.extension> -a
+```
+
+Rajouter l'option `-d` permet d'avoir plus d'information et de mieux visualiser comment fonctionne le programme.
+
+```bash
+python .\imageTranslate.py <chemin/image.extension> -d
+# Les options peuvent etre cumulees
+python .\imageTranslate.py <chemin/image.extension> -da
+```
+
+Pour plus de détails sur le programme et ses options :
+
+```bash
+python .\imageTranslate.py -h
+```
 
 Si vous ne disposer pas d'image, vous pouvez :
 
@@ -49,7 +69,9 @@ Si vous ne disposer pas d'image, vous pouvez :
         python .\brailleWriter.py
         ```
 
-    2. Prendre ce texte en photo à l'aide d'un telephone
+        [Rappel d'utilisation](../BrailleTranslate2022/README.md/#1-ecrire-du-texte-en-braille)
+
+    2. Prendre ce texte en photo à l'aide d'un téléphone
     3. Transférer cette photo sur l'odinateur ou utiliser la webcam pour prendre en photo le braille sur le téléphone
 
         ```bash
@@ -64,8 +86,16 @@ Si vous ne disposer pas d'image, vous pouvez :
 
 ### Traduire sur les images de votre webcam
 
+Utilisez la commande suivante pour traduire du braille en direct :
+
 ```bash
 python .\liveTranslate.py
+```
+
+Les mêmes options que pour la [traduction sur image](#traduire-sur-une-image) sont disponibles pour ce programme, pour plus de détails :
+
+```bash
+python .\liveTranslate.py -h
 ```
 
 ## Fonctionnement brailleReaderV3
@@ -128,7 +158,7 @@ Les points n'ayant pas passé le deuxième filtre apparaissent avec un cercle en
 
 ### 3. Touver et grouper les points d'un même caractère
 
-Même procédé que pour [`brailleReaderV2`](BrailleTranslate2022/brailleReaderV2.py)
+Même procédé que pour [`brailleReaderV2`](../BrailleTranslate2022/README.md/#222-touver-et-grouper-le)
 
 ![points_box](res/readmeImg/points_box.png)
 

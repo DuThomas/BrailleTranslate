@@ -103,46 +103,47 @@ Cette deuxième version va permettre de gérer les photos de texte braille comme
 
 ![photo de texte en braille](res/readmeImg/brailleTextePhoto.png)
 
-- 2.2.1. Conversion en noir et blanc puis seuillage de l'image
+#### 2.2.1. Conversion en noir et blanc puis seuillage de l'image
 
-  La première étape consiste a convertir l'image en niveau de gris puis d'appliquer un **seuillage** pour n'avoir plus que des pixels noirs ou blancs.
+La première étape consiste a convertir l'image en niveau de gris puis d'appliquer un **seuillage** pour n'avoir plus que des pixels noirs ou blancs.
 
-  Il est aussi possible d'utiliser des fonctions d'**érosion** et de **dilatation** afin de supprimer d'éventuels *bruits* dans l'image.
+Il est aussi possible d'utiliser des fonctions d'**érosion** et de **dilatation** afin de supprimer d'éventuels *bruits* dans l'image.
 
-- 2.2.2. Touver et grouper les points d'un même caractère
+#### 2.2.2. Touver et grouper les points d'un même caractère
 
-  Pour trouver les différents points de l'image, on utilise la fonction *findContour()* qui renvoie une liste de tous les contours présents dans l'image. On obtient ainsi une liste de tous les points avec différentes informations telles que leur taille et leurs coordonnées.
+Pour trouver les différents points de l'image, on utilise la fonction *findContour()* qui renvoie une liste de tous les contours présents dans l'image. On obtient ainsi une liste de tous les points avec différentes informations telles que leur taille et leurs coordonnées.
 
-  Pour trouver les groupes de points appartenant au même caractère :
+Pour trouver les groupes de points appartenant au même caractère :
 
-  - On parcourt la liste des points (qui ne font partie d'aucun groupe)
-  - Pour chacun de ces points, on commence par le retirer de la liste et on crée un nouveau groupe de points dans lequel on le rajoute. Puis on regarde s'il y a un point qui se trouve assez proche de lui pour le rajouter dans le groupe. On recommence cette étape pour chacun des points trouvés
+- On parcourt la liste des points (qui ne font partie d'aucun groupe)
+- Pour chacun de ces points, on commence par le retirer de la liste et on crée un nouveau groupe de points dans lequel on le rajoute. Puis on regarde s'il y a un point qui se trouve assez proche de lui pour le rajouter dans le groupe. On recommence cette étape pour chacun des points trouvés
 
-  Voici à quoi cela ressemble :
+Voici à quoi cela ressemble :
 
-  ![photo du texte en braille](res/readmeImg/pointGroup.png)
+![photo du texte en braille](res/readmeImg/pointGroup.png)
 
-  (Les points d'un même groupe ont étés reliés par un trait)
+(Les points d'un même groupe ont étés reliés par un trait)
 
-  `[Problème 1]` : Pour les caractères tels que celui à la deuxième ligne, première colone (la lettre x), ils sont considérés comme deux groupes de points car les points du haut sont trop distants de ceux du bas.
+`[Problème 1]` : Pour les caractères tels que celui à la deuxième ligne, première colone (la lettre x), ils sont considérés comme deux groupes de points car les points du haut sont trop distants de ceux du bas.
 
-- 2.2.3. Déterminer la zone de chaque caractère
+#### 2.2.3. Déterminer la zone de chaque caractère
 
-  Pour trouver la zone contenant le caractère entier, on commence par recupérer les coordonnées du point le plus en haut à gauche. Ce sera le coin supérieur gauche de la zone.
-  
-  La longueur et la largeur de la zone peuvent être calculées :
-  - En fonction de la taille d'un point.
-  - En fonction de la plus grande zone trouvée :
+Pour trouver la zone contenant le caractère entier, on commence par recupérer les coordonnées du point le plus en haut à gauche. Ce sera le coin supérieur gauche de la zone.
 
-    On calcule la taille qu'occupe chaque groupe et on garde la plus grande.
+La longueur et la largeur de la zone peuvent être calculées :
 
-    ![photo de texte en braille](res/readmeImg/pointGroupSmallBox.png)
+- En fonction de la taille d'un point.
+- En fonction de la plus grande zone trouvée :
 
-    On applique ensuite cette taille pour tous les autres groupes :
-  
-    ![photo de texte en braille](res/readmeImg/pointGroupBox.png)
+  On calcule la taille qu'occupe chaque groupe et on garde la plus grande.
 
-    `[Problème 2]` : La taille des zones ne s'adapte pas pour chaque groupe, la zone est trop grande pour les caractère de la première ligne. Cependant cela de posera pas de problème pour la suite.
+  ![photo de texte en braille](res/readmeImg/pointGroupSmallBox.png)
+
+  On applique ensuite cette taille pour tous les autres groupes :
+
+  ![photo de texte en braille](res/readmeImg/pointGroupBox.png)
+
+  `[Problème 2]` : La taille des zones ne s'adapte pas pour chaque groupe, la zone est trop grande pour les caractère de la première ligne. Cependant cela de posera pas de problème pour la suite.
 
 Pour régler le `[Problème 1]`, il suffit de regrouper les zones qui se superposent
 

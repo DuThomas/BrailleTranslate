@@ -50,22 +50,20 @@ def are_close_enough(point1, point2):
 
 def find_point(point_group, points, debug_image, debug):
     parent_point = point_group[-1]
-    parent_point_center = (parent_point.x + parent_point.width/2,
-                         parent_point.y + parent_point.height/2)
+    parent_pt_center = coord_to_int((parent_point.x + parent_point.width/2,
+                                     parent_point.y + parent_point.height/2))
     for point in points:
         if not point.have_group:
-            point_center = (point.x + point.width/2, point.y + point.height/2)
+            point_center = coord_to_int((point.x + point.width/2,
+                                         point.y + point.height/2))
             if are_close_enough(parent_point, point):
                 point.have_group = True
                 point_group.append(point)
                 if len(point_group) < 5 :
                     find_point(point_group, points, debug_image, debug)
                     if debug:
-                        cv2.line(debug_image, ((int)(parent_point_center[0]),
-                                               (int)(parent_point_center[1])),
-                                              ((int)(point_center[0]),
-                                               (int)(point_center[1])),
-                                               (0, 0, 0), 1)
+                        cv2.line(debug_image, parent_pt_center,
+                                 point_center, (0, 0, 0), 1)
 
 
 def points_shape(points):
@@ -75,7 +73,7 @@ def points_shape(points):
     return points_height, points_width
                 
 
-def find_point_box(point_group, image):
+def find_point_box(point_group, debug_img):
     x_min = point_group[0].x
     y_min = point_group[0].y
     x_max = x_min
@@ -87,8 +85,8 @@ def find_point_box(point_group, image):
         x_max = max(x_max, point.x + point.width)
         x_min = min(x_min, point.x)
     
-    # cv2.rectangle(image, coord_to_int((x_min, y_min)),
-    #               coord_to_int((x_max, y_max)), (0, 0, 0), 2)
+    cv2.rectangle(debug_img, coord_to_int((x_min, y_min)),
+                  coord_to_int((x_max, y_max)), (0, 0, 0), 1)
 
     return(x_min, y_min, x_max - x_min, y_max - y_min)
 
@@ -113,18 +111,13 @@ def resize_braille_chars(braille_chars, best_w, best_h, image, debug):
             #     cv2.rectangle(image, coord_to_int(tlc),
             #                     coord_to_int(brc), (0, 0, 0), 2)
             # else:
-            cv2.rectangle(image, coord_to_int(tlc),
-                            coord_to_int(brc), (0, 0, 0), 1)
+            # cv2.rectangle(image, coord_to_int(tlc),
+            #                 coord_to_int(brc), (0, 0, 0), 1)
 
         if braille_char.width < default_w:
             braille_char.width = best_w if best_w != 0 else default_w
         if braille_char.height < default_h:
             braille_char.height = best_h if best_h != 0 else default_h
-        # tlc = (braille_char.x, braille_char.y)
-        # brc = (tlc[0] + braille_char.width, tlc[1] + braille_char.height)
-
-        # cv2.rectangle(image, coord_to_int(tlc),
-        #                 coord_to_int(brc), (0, 0, 0), 1)
     # character box =! points box (character box >= points box)
 
 
@@ -274,13 +267,12 @@ def get_braille_chars(input_img, debug_img, debug):
 def get_points_nb(input_img, threshold_value):
     thresholded_image = roiFinderV3.threshold_image(input_img,
                                                     threshold_value)
-    points = roiFinderV3.get_points(thresholded_image,
-                                    False)
+    points = roiFinderV3.get_points(thresholded_image,False)
     
     return len(points)
 
 
-def comp_threshold_interval(pts_lens, l_val, u_val, step_val):
+def comp_threshold_interval(pts_lens, l_val, u_val, step_val, debug):
     if (pts_lens[0] >= pts_lens[1] and pts_lens[0] > pts_lens[2]):
         u_val -= step_val
     elif (pts_lens[2] >= pts_lens[1] and pts_lens[2] > pts_lens[0]):
@@ -289,16 +281,16 @@ def comp_threshold_interval(pts_lens, l_val, u_val, step_val):
         u_val -= int(0.5 * step_val)
         l_val += int(0.5 * step_val)
     else:
-        print("error", pts_lens)
+        if debug : print("error", pts_lens)
     return l_val, u_val
 
-def find_best_threshold(input_img, spilt_nb=3):
+def find_best_threshold(input_img, debug, spilt_nb=3):
     lower_value ,upper_value = 0, 255
 
     itera = 1
     points_lens = [0, 1, 1, 2]
     while not (points_lens[0] == points_lens[1] == points_lens[2]):
-        print("iteration : ", itera, lower_value, upper_value)
+        if debug : print("iteration : ", itera, lower_value, upper_value)
         step_value = int((upper_value-lower_value) / (spilt_nb+1))
         new_points_lens = []
         for i in range(spilt_nb):
@@ -309,12 +301,12 @@ def find_best_threshold(input_img, spilt_nb=3):
         if new_points_lens != points_lens:
             points_lens = new_points_lens.copy()
         else:
-            print("Same number of points")
+            if debug : print("Same number of points")
             break
-        print(points_lens)
+        if debug : print(points_lens)
         itera += 1
         lower_value, upper_value = comp_threshold_interval(
-            points_lens, lower_value, upper_value, step_value)
+            points_lens, lower_value, upper_value, step_value, debug)
     threshold_value -= step_value
 
     return threshold_value
@@ -329,7 +321,9 @@ def braille_chars_accruracy(braille_chars, threshold_value):
     
     if braille_chars:
         accuracy = 1 - unknown_count/len(braille_chars)
-        print('{}/{} : {}'.format(unknown_count, len(braille_chars), 1 - unknown_count/len(braille_chars)))
+        print('{}/{} : {}'.format(unknown_count,
+                                  len(braille_chars),
+                                  1 - unknown_count/len(braille_chars)))
     else:
         print("no points")
         accuracy = 0

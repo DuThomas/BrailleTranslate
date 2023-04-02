@@ -232,8 +232,9 @@ def get_points(thresholded_image, debug):
         remove_big_points(best_points, thresholded_image, debug)
 
         # display_roi(image, best_points)
-
     # cv2.imshow("Threshlolded", thresholded_image)
-    print("points : ", len(best_points))
+    if debug:
+        print("points : ", len(best_points))
+        
     return best_points
 

@@ -200,11 +200,11 @@ Résultat :
 
 ## Perspectives
 
-### 1.Seuillage automatique
+### 1. Seuillage automatique
 
 Jusqu'à présent il fallait ajuster la valeur de seuillage manuellement, l'idée serait d'automatiser ce procédé.
 
-Une version de test est en cours de développement, pour le tester, ajouter l'option `-a` ou `--auto`.
+Une version de test est en cours de développement, pour le tester, ajouter l'option `-a` ou `--auto` lorsque vous lancez les programmes de [traduction](#utilisation).
 
 Le programme va chercher la valeur de seuillage en suivant le principe suivant :
 

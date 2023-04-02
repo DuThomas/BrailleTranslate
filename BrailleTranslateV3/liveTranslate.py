@@ -27,6 +27,7 @@ parser.add_argument('-d', '--debug', action='store_true',
 args = parser.parse_args()
 
 cap = cv2.VideoCapture(0)
+threshold_value = brCst.DEFAULT_THRESHOLD
 
 while True:
     start_time = time.time()
@@ -37,7 +38,7 @@ while True:
     threshold_value = (brailleReaderV3.find_best_threshold(video_image,
                                                            args.debug)
                        if args.auto
-                       else brCst.DEFAULT_THRESHOLD)
+                       else threshold_value)
     result_image = video_image.copy()
     thresholded_image = roiFinderV3.threshold_image(video_image,
                                                     threshold_value)

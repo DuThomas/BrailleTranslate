@@ -1,5 +1,13 @@
 # BrailleTranslateV3
 
+## Sommaire
+
+- [Objectif](#objectif--renforcer-lalgorithme-déjà-établie)
+- [Prérequis](#prérequis)
+- [Utilisation](#utilisation)
+- [Fonctionnement](#fonctionnement-braillereaderv3)
+- [Perspective](#perspectives)
+
 ## Objectif : Renforcer l'algorithme déjà établie
 
 - Pouvoir traduire une image avec un fond quelconque telle que celle-ci :
@@ -10,14 +18,22 @@
     Sortie :  
     ![output_image](res/readmeImg/output.png)
 
-## Utilisation
+## Prérequis
 
-Verifier que vous êtes bien dans le dossier [BrailleTranslateV3](.)
+Verifier que vous soyez bien dans le dossier [BrailleTranslateV3](.)
 
 ```bash
 pwd
 >> ...\BrailleTranslateV3
 ```
+
+Installer les bibliothèques nécessaires (numpy et openCV) :
+
+```bash
+pip install -r .\requirements.txt
+```
+
+## Utilisation
 
 ### Traduire sur une image
 
@@ -31,7 +47,7 @@ Si votre texte n'est pas, ou est mal traduit, utilisez les touches `'t'` et `'y'
 
 Enfin, la touche `'q'` permet de quitter le programme.
 
-Utiliser l'option `-a` permet ajuster automatiquement la valeur de seuillage (cette fonctionnalité est encore cours de développement et n'est pas toujours très efficace).
+Utiliser l'option `-a` permet d'ajuster automatiquement la valeur de seuillage (cette fonctionnalité est encore cours de [développement](#seuillage-automatique) et n'est pas toujours très efficace).
 
 ```bash
 python .\imageTranslate.py <chemin/image.extension> -a
@@ -181,3 +197,35 @@ Les caractères sont enfin prêts à être traduit
 Résultat :
 
 ![output_image](res/readmeImg/output.png)
+
+## Perspectives
+
+### 1.Seuillage automatique
+
+Jusqu'à présent il fallait ajuster la valeur de seuillage manuellement, l'idée serait d'automatiser ce procédé.
+
+Une version de test est en cours de développement, pour le tester, ajouter l'option `-a` ou `--auto`.
+
+Le programme va chercher la valeur de seuillage en suivant le principe suivant :
+
+Sachant que la valeur de seuillage est comprise entre **0 et 255**, on commence par seuiller l'image avec **trois** valeurs équiréparties (63, 126, 189) sur la plage pécédente (0, 255) : on utilise la recherche par **trichotomie**
+
+Pour chacune des valeurs de seuillage nous obtenons un resultat différents, il faut déterminer un ``critère de parformance`` pour déterminer quelle est le mailleur seuille parmis les trois.
+
+Une fois la meilleur valeur de seuillage trouvée, on réduit la plage autour de cette valeur, et on réitère l'opération jusqu'à ce que les trois valeurs donnent les mêmes resultats, ou jusqu'à ce que ces les résultats n'évoluent plus.
+
+#### 1.1. Critère de performance
+
+Le critère de performance utilisé dans cette version est le nombre de points détectés sur l'image. Ce critère n'est pas le plus pertinent mais permet d'avoir une première approche pour le seuillage automatique.
+
+### 2. Détecter les mots, les nombres
+
+L'un des prochains objectifs est de pourvoir détecter et traduire **les nombres**.
+
+![braille_numbers](res/readmeImg/numbers.png)
+
+Pour écrire un chiffre en braille, on réutilise les dix premières lettres de l'alphabet précédées d'un caractère spécial qui sert de préfix.
+
+Tous les caractères qui suivent ce préfix seront traduits comme des chiffres.
+
+Il est donc nécessaire dans un premier temps de détecter les mots pour connaître les délimitations.

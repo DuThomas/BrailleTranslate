@@ -297,7 +297,7 @@ def find_best_threshold(input_img, debug, spilt_nb=3):
             threshold_value = lower_value + (i+1)*step_value
             new_points_lens.append(get_points_nb(input_img.copy(),
                                              threshold_value))
-
+            print("Th : ", threshold_value)
         if new_points_lens != points_lens:
             points_lens = new_points_lens.copy()
         else:
